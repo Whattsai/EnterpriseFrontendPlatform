@@ -14,7 +14,7 @@ gulp.task('clean', function () {
     return del([targetPath + '/**/*']);
 });
 
-gulp.task('default', function () {
+gulp.task('moveNpmjsToDest', function () {
     gulp.src(nodeRoot + "bootstrap/dist/js/*").pipe(gulp.dest(targetPath + "/bootstrap/dist/js"));
     gulp.src(nodeRoot + "bootstrap/dist/css/*").pipe(gulp.dest(targetPath + "/bootstrap/dist/css"));
     gulp.src(nodeRoot + "bootstrap/dist/fonts/*").pipe(gulp.dest(targetPath + "/bootstrap/dist/fonts"));
