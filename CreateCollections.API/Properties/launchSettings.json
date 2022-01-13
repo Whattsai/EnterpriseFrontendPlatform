@@ -4,19 +4,19 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:33318",
+      "applicationUrl": "http://localhost:29589",
       "sslPort": 0
     }
   },
   "profiles": {
-    "Logic.API": {
+    "CreateCollections.API": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "weatherforecast",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:5150",
+      "applicationUrl": "http://localhost:5132",
       "dotnetRunMessages": true
     },
     "IIS Express": {
