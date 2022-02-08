@@ -1,0 +1,56 @@
+version: '3.4'
+
+services:
+  maildev:
+    image: maildev/maildev
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+
+  redis:
+    image: redis:alpine
+
+  seq:
+    image: datalust/seq:latest
+
+  sqldata:
+    image: mcr.microsoft.com/mssql/server:2017-latest 
+
+  zipkin:
+    image: openzipkin/zipkin-slim
+
+  webmvc:
+    image: ${DOCKER_REGISTRY-}webmvc
+    build:
+      context: .
+      dockerfile: WebMVC/Dockerfile
+  webmvc-dapr:
+    image: "daprio/daprd:1.5.1"
+    network_mode: "service:webmvc"
+    depends_on:
+      - webmvc
+
+  web.actions.aggregator:
+    image: ${DOCKER_REGISTRY-}webactionsaggregator
+    build:
+      context: .
+      dockerfile: Web.Actions.Aggregator/Dockerfile
+  web.actions.aggregator-dapr:
+    image: "daprio/daprd:1.5.1"
+    network_mode: "service:web.actions.aggregator"
+    depends_on:
+      - web.actions.aggregator
+
+  rulecollections.api:
+    image: ${DOCKER_REGISTRY-}rulecollectionsapi
+    build:
+      context: .
+      dockerfile: RuleCollections.API/Dockerfile
+  rulecollections.api-dapr:
+    image: "daprio/daprd:1.5.1"
+    network_mode: "service:rulecollections.api"
+    depends_on:
+      - rulecollections.api
+
+  dapr-placement:
+    image: "daprio/dapr:1.5.1"

@@ -1,8 +1,6 @@
 ﻿using Dapr;
 using Dapr.Client;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Text;
 using System.Text.Json;
 
 namespace RuleCollections.API.Controllers
