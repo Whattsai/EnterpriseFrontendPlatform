@@ -1,26 +1,76 @@
 version: '3.4'
 
 services:
-  webmvc:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443;http://+:80
+  maildev:
     ports:
-      - "80"
-      - "443"
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - "5500:80"
+  #rabbitmq:
+  #  ports:
+  #    - "5672:5672"
+  redis:
+    image: redis:alpine
+    ports:
+      - "5379:6379"
+  #seq:
+  #  environment:
+  #    - ACCEPT_EULA=Y
+  #  ports:
+  #    - "5340:80"
+  #sqldata:
+  #  environment:
+  #    - SA_PASSWORD=Pass@word
+  #    - ACCEPT_EULA=Y
+  #  ports:
+  #    - "5433:1433"
+  #  volumes:
+  #    - eshop-sqldata:/var/opt/mssql
+  zipkin:
+    ports:
+      - "5411:9411"
+  dapr-placement:
+    command: ["./placement", "-port", "50000", "-log-level", "debug"]
+    ports:
+      - "50000:50000"
+
+  #webmvc:
+  #  environment:
+  #    - ASPNETCORE_ENVIRONMENT=Development
+  #    - ASPNETCORE_URLS=https://+:443;http://+:80
+  #  ports:
+  #    - "80"
+  #    - "443"
+  #  volumes:
+  #    - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+  #    - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
   web.actions.aggregator:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://0.0.0.0:80
     ports:
-      - "80"
-
+      - "5100:80"
+  web.actions.aggregator-dapr:
+    command: ["./daprd",
+      "-app-id", "aggregate",
+      "-app-port", "80",
+      "-dapr-http-port", "3500",
+      "-components-path", "/components"
+      ]
+    volumes:
+      - "./components/:/components"
 
   rulecollections.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://0.0.0.0:80
     ports:
-      - "80"
-
+      - "5200:80"
+  rulecollections.api-dapr:
+    command: ["./daprd",
+      "-app-id", "logicapi",
+      "-app-port", "80",
+      "-dapr-http-port", "3501",
+      "-components-path", "/components"
+      ]
+    volumes:
+      - "./components/:/components"

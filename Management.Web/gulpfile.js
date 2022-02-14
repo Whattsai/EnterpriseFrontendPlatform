@@ -26,5 +26,5 @@ gulp.task('moveNpmjsToDest', function () {
     gulp.src(nodeRoot + "jquery-validation/dist/*.js").pipe(gulp.dest(targetPath + "/jquery-validation/dist"));
 
     gulp.src(nodeRoot + "jquery-validation-unobtrusive/dist/*.js").pipe(gulp.dest(targetPath + "/jquery-validation-unobtrusive"));
-    return;
+    return Promise.resolve('success');
 });

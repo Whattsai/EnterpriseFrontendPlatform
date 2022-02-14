@@ -28,6 +28,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dapr", "dapr", "{19765E74-C8DD-428B-8BF9-C4B046E68A83}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "components", "components", "{40344259-FAAB-4A09-8C61-205D02DB096B}"
+	ProjectSection(SolutionItems) = preProject
+		pubsub.yaml = pubsub.yaml
+		statestore.yaml = statestore.yaml
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.Actions.Aggregator", "Web.Actions.Aggregator\Web.Actions.Aggregator.csproj", "{68F05DFD-964E-4FDB-BF72-C716E691242A}"
 EndProject
