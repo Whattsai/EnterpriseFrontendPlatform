@@ -32,28 +32,24 @@ services:
     ports:
       - "50000:50000"
 
-  #webmvc:
-  #  environment:
-  #    - ASPNETCORE_ENVIRONMENT=Development
-  #    - ASPNETCORE_URLS=https://+:443;http://+:80
-  #  ports:
-  #    - "80"
-  #    - "443"
-  #  volumes:
-  #    - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-  #    - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+  webmvc:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "10000:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
 
   web.actions.aggregator:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://0.0.0.0:80
     ports:
-      - "5100:80"
+      - "5000:80"
   web.actions.aggregator-dapr:
     command: ["./daprd",
       "-app-id", "aggregate",
       "-app-port", "80",
-      "-dapr-http-port", "3500",
       "-components-path", "/components"
       ]
     volumes:
@@ -62,14 +58,12 @@ services:
   rulecollections.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://0.0.0.0:80
     ports:
-      - "5200:80"
+      - "5001:80"
   rulecollections.api-dapr:
     command: ["./daprd",
       "-app-id", "logicapi",
       "-app-port", "80",
-      "-dapr-http-port", "3501",
       "-components-path", "/components"
       ]
     volumes:

@@ -1,21 +1,39 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Dapr.Client;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using WebMVC.Models;
 
 namespace WebMVC.Controllers
 {
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+
+        public string? Summary { get; set; }
+    }
+
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly DaprClient _daprClient;
+        private readonly HttpClient _httpClient;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, DaprClient daprClient, HttpClient httpClient)
         {
             _logger = logger;
+            _daprClient = daprClient;
+            _httpClient = httpClient;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var response = await _httpClient.GetAsync("http://Web.Actions.Aggregator/Calculate/DaprClientWithDI");
+            var result = response.Content.ReadFromJsonAsync<IEnumerable<WeatherForecast>>();
+            return View(result);
         }
 
         public IActionResult Privacy()

@@ -1,7 +1,10 @@
 version: '3.4'
 
-services:
+networks:
+  efp-dapr:
+    driver: bridge
 
+services:
 # Deploy other daprized services and components
   maildev:
     image: maildev/maildev
@@ -17,13 +20,17 @@ services:
     image: openzipkin/zipkin-slim
   dapr-placement:
     image: "daprio/dapr:1.5.1"
+    networks:
+      - efp-dapr
 
 # Deploy self customized app daprized services
-  #webmvc:
-  #  image: ${DOCKER_REGISTRY-}webmvc
-  #  build:
-  #    context: .
-  #    dockerfile: WebMVC/Dockerfile
+  webmvc:
+    image: ${DOCKER_REGISTRY-}webmvc
+    build:
+      context: .
+      dockerfile: WebMVC/Dockerfile
+    networks:
+      - efp-dapr
   #webmvc-dapr:
   #  image: "daprio/daprd:1.5.1"
   #  network_mode: "service:webmvc"
@@ -35,6 +42,8 @@ services:
     build:
       context: .
       dockerfile: Web.Actions.Aggregator/Dockerfile
+    networks:
+      - efp-dapr
   web.actions.aggregator-dapr:
     image: "daprio/daprd:1.5.1"
     network_mode: "service:web.actions.aggregator"
@@ -48,6 +57,8 @@ services:
       dockerfile: RuleCollections.API/Dockerfile
     depends_on:
       - redis
+    networks:
+      - efp-dapr
   rulecollections.api-dapr:
     image: "daprio/daprd:1.5.1"
     network_mode: "service:rulecollections.api"
