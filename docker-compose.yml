@@ -12,6 +12,8 @@ services:
   #  image: rabbitmq:3-management-alpine
   redis:
     image: redis:alpine
+    networks:
+      - efp-dapr
   #seq:
   #  image: datalust/seq:latest
   #sqldata:

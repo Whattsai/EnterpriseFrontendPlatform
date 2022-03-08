@@ -11,11 +11,13 @@
 
   <ItemGroup>
     <PackageReference Include="Dapr.AspNetCore" Version="1.5.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.43.0" />
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.5.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
+	  <Protobuf Include="..\wheather.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>

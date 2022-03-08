@@ -1,4 +1,5 @@
 ﻿using Dapr.Client;
+using GrpcWheather;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using WebMVC.Models;
@@ -31,8 +32,8 @@ namespace WebMVC.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var response = await _httpClient.GetAsync("http://Web.Actions.Aggregator/Calculate/DaprClientWithDI");
-            var result = response.Content.ReadFromJsonAsync<IEnumerable<WeatherForecast>>();
+            var response = await _httpClient.GetAsync("http://Web.Actions.Aggregator/Calculate/DaprServiceInvokeGrpc");
+            var result = response.Content.ReadFromJsonAsync<HelloReply>();
             return View(result);
         }
 

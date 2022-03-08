@@ -1,5 +1,6 @@
 ﻿using Dapr;
 using Dapr.Client;
+using GrpcWheather;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -37,24 +38,24 @@ namespace RuleCollections.API.Controllers
 
         #region State
         [HttpGet("GetState")]
-        public async Task<ActionResult> GetStateAsync()
+        public async Task<HelloReply> GetStateAsync()
         {
             var result = await _daprClient.GetStateAsync<string>("statestore", "guid");
-            return Ok(result);
+            return new HelloReply { Message = result };
         }
 
         [HttpPost("PostState")]
-        public async Task<ActionResult> PostStateAsync()
+        public async Task<HelloReply> PostStateAsync()
         {
             await _daprClient.SaveStateAsync<string>("statestore", "guid", Guid.NewGuid().ToString(), new StateOptions() { Consistency = ConsistencyMode.Strong });
-            return Ok("done");
+            return new HelloReply { Message = "done" };
         }
 
         [HttpDelete("DeleteState")]
-        public async Task<ActionResult> DeleteStateAsync()
+        public async Task<HelloReply> DeleteStateAsync()
         {
             await _daprClient.DeleteStateAsync("statestore", "guid");
-            return Ok("done");
+            return new HelloReply { Message = "done" };
         }
 
         [HttpPost("PostStateWithTag")]
@@ -91,19 +92,12 @@ namespace RuleCollections.API.Controllers
             return data;
         }
 
-        [Topic("pubsub", "rule")]
+        //[Topic("pubsub", "rule")]
         [HttpPost("TestSubSelf")]
         public async Task<ActionResult> TestSubSelfAsync(WeatherForecast data, [FromServices] DaprClient daprClient)
         {
             _logger.LogInformation("success into sub!");
             _logger.LogInformation($"start sub：{JsonSerializer.Serialize(data)}");
-
-            //Stream stream = Request.Body;
-            //byte[] buffer = new byte[Request.ContentLength.Value];
-            //stream.Position = 0L;
-            //stream.ReadAsync(buffer, 0, buffer.Length);
-            //string content = Encoding.UTF8.GetString(buffer);
-            //_logger.LogInformation("topicStatus" + content);
             _logger.LogInformation("end!");
             return Ok("done");
         }

@@ -61,6 +61,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InitialCollections.API", "I
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{F52AA613-06F8-4D2F-A351-F2C7D879596F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Protos", "Protos", "{6A460D18-1689-45E6-BB29-2152FA0D9AD5}"
+	ProjectSection(SolutionItems) = preProject
+		wheather.proto = wheather.proto
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,6 +131,7 @@ Global
 		{94AA7CE5-A139-4BBB-9EA6-4A27C4BC1349} = {75308A23-4818-4DB6-A457-D4B7945C0CC1}
 		{5CB9ED6A-D13D-46DC-9F75-B3BF925E56B9} = {75308A23-4818-4DB6-A457-D4B7945C0CC1}
 		{0C5DEB27-91B6-4FDD-8954-F74CE711DDD8} = {5CB9ED6A-D13D-46DC-9F75-B3BF925E56B9}
+		{6A460D18-1689-45E6-BB29-2152FA0D9AD5} = {BF95C44C-133D-418E-86D6-C4A9DD3B4D9F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {558E31DA-7255-40CA-B269-3DDAFCC53D56}
