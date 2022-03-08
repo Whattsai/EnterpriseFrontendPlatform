@@ -45,6 +45,7 @@ namespace RuleCollections.API.GRPCServices
                     response.Data = Any.Pack(new HelloReply { Message = "deletestate ok" });
                     break;
                 case "rule/testpubself":
+                    //var data = new HelloRequest { Name = "abcdefgggg" };
                     var data = new WeatherForecast
                     {
                         Summary = "都沒你的甜兒",
@@ -78,7 +79,7 @@ namespace RuleCollections.API.GRPCServices
             {
                 case "rule":
                     _logger.LogInformation("success into sub!");
-                    _logger.LogInformation($"start sub：{JsonSerializer.Serialize(request.Data)}");
+                    _logger.LogInformation($"start sub：{request.Data.ToStringUtf8()}");
                     _logger.LogInformation("end!");
                     break;
             }

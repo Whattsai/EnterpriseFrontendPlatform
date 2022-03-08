@@ -92,7 +92,7 @@ namespace RuleCollections.API.Controllers
             return data;
         }
 
-        //[Topic("pubsub", "rule")]
+        [Topic("pubsub", "rule")]
         [HttpPost("TestSubSelf")]
         public async Task<ActionResult> TestSubSelfAsync(WeatherForecast data, [FromServices] DaprClient daprClient)
         {

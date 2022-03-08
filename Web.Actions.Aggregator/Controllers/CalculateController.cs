@@ -25,7 +25,7 @@ namespace Web.Actions.Aggregator.Controllers
         [HttpGet("DaprTestPub")]
         public async Task<ActionResult> TestPubAsync()
         {
-            var result = await _daprClient.InvokeMethodAsync<HelloReply>(HttpMethod.Get, "logicapi", "rule/testpubself");
+            var result = await _daprClient.InvokeMethodAsync<WeatherForecast>(HttpMethod.Get, "logicapi", "rule/testpubself");
             return Ok(result);
         }
 
