@@ -66,6 +66,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Protos", "Protos", "{6A460D
 		wheather.proto = wheather.proto
 	EndProjectSection
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "dynamicwebsite", "DynamicWebsite\dynamicwebsite.esproj", "{5356FFBB-028C-429F-BE15-EDACADD8E708}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +106,12 @@ Global
 		{F52AA613-06F8-4D2F-A351-F2C7D879596F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F52AA613-06F8-4D2F-A351-F2C7D879596F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F52AA613-06F8-4D2F-A351-F2C7D879596F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5356FFBB-028C-429F-BE15-EDACADD8E708}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5356FFBB-028C-429F-BE15-EDACADD8E708}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5356FFBB-028C-429F-BE15-EDACADD8E708}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{5356FFBB-028C-429F-BE15-EDACADD8E708}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5356FFBB-028C-429F-BE15-EDACADD8E708}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5356FFBB-028C-429F-BE15-EDACADD8E708}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -132,6 +140,7 @@ Global
 		{5CB9ED6A-D13D-46DC-9F75-B3BF925E56B9} = {75308A23-4818-4DB6-A457-D4B7945C0CC1}
 		{0C5DEB27-91B6-4FDD-8954-F74CE711DDD8} = {5CB9ED6A-D13D-46DC-9F75-B3BF925E56B9}
 		{6A460D18-1689-45E6-BB29-2152FA0D9AD5} = {BF95C44C-133D-418E-86D6-C4A9DD3B4D9F}
+		{5356FFBB-028C-429F-BE15-EDACADD8E708} = {BF95C44C-133D-418E-86D6-C4A9DD3B4D9F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {558E31DA-7255-40CA-B269-3DDAFCC53D56}

@@ -25,6 +25,9 @@ services:
     networks:
       - efp-dapr
 
+  vue:
+    build: services/vue
+
 # Deploy self customized app daprized services
   webmvc:
     image: ${DOCKER_REGISTRY-}webmvc

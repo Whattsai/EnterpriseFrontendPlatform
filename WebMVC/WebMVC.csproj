@@ -10,10 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\App.vue" />
+    <Content Include="src\app-components\App.vue" />
+    <Content Include="src\app-components\HelloWorld.vue" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="wwwroot\assets\logo.png" />
-    <None Include="wwwroot\components\HelloWorld.vue" />
-    <None Include="wwwroot\js\main.js" />
+    <None Include="wwwroot\src\main.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +28,16 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
 	  <Protobuf Include="..\wheather.proto" GrpcServices="Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="src\app-common\" />
+    <Folder Include="src\app-dataclass\" />
+    <Folder Include="src\app-store\" />
+    <Folder Include="src\app-utilities\" />
+    <Folder Include="wwwroot\assets\afterload\" />
+    <Folder Include="wwwroot\css\afterload\" />
+    <Folder Include="wwwroot\lib\afterload\" />
   </ItemGroup>
 
 </Project>

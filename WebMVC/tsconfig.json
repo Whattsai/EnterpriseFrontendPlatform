@@ -1,14 +1,13 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
+    "target": "es2021",
+    "module": "CommonJS",
+    "outDir": "./wwwroot",
+    "rootDir": "./",
     "noImplicitAny": false,
     "noEmitOnError": true,
     "removeComments": false,
-    "sourceMap": true,
-    "target": "es5",
-    "outDir": "wwwroot/js"
-  },
-  "include": [
-    "tsCore/**/*"
-  ]
+    "esModuleInterop": true
+  }
 }
