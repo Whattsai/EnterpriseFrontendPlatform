@@ -10,6 +10,42 @@
   <ItemGroup>
     <Script Include="**" Exclude="*.esproj;**\node_modules\**" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include=".vscode\launch.json" />
+    <None Include="aspnetcore-https.js" />
+    <None Include="babel.config.js" />
+    <None Include="jsconfig.json" />
+    <None Include="nuget.config" />
+    <None Include="package-lock.json" />
+    <None Include="package.json" />
+    <None Include="public\favicon.ico" />
+    <None Include="public\index.html" />
+    <None Include="README.md" />
+    <None Include="src\assets\logo.png" />
+    <None Include="src\components\HelloWorld.vue" />
+    <None Include="src\main.ts" />
+    <None Include="src\shims-vue.d.ts" />
+    <None Include="tsconfig.json" />
+    <Content Include="vue.config.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include=".vscode\" />
+    <None Include="aspnetcore-https.js" />
+    <None Include="babel.config.js" />
+    <None Include="jsconfig.json" />
+    <None Include="nuget.config" />
+    <None Include="package-lock.json" />
+    <None Include="package.json" />
+    <None Include="public\favicon.ico" />
+    <None Include="public\index.html" />
+    <None Include="README.md" />
+    <None Include="src\assets\logo.png" />
+    <None Include="src\components\HelloWorld.vue" />
+    <None Include="src\main.ts" />
+    <None Include="src\shims-vue.d.ts" />
+    <None Include="tsconfig.json" />
+    <None Include="vue.config.js" />
+  </ItemGroup>
   <!-- This target is copied from the ASP.NET SPA template in order to ensure node_modules are in place. -->
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->
