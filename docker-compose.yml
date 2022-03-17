@@ -25,22 +25,13 @@ services:
     networks:
       - efp-dapr
 
-  vue:
-    build: services/vue
+  dynamicwebsite:
+    image: dynamicwebsite
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile
 
 # Deploy self customized app daprized services
-  webmvc:
-    image: ${DOCKER_REGISTRY-}webmvc
-    build:
-      context: .
-      dockerfile: WebMVC/Dockerfile
-    networks:
-      - efp-dapr
-  #webmvc-dapr:
-  #  image: "daprio/daprd:1.5.1"
-  #  network_mode: "service:webmvc"
-  #  depends_on:
-  #    - webmvc
 
   web.actions.aggregator:
     image: ${DOCKER_REGISTRY-}webactionsaggregator

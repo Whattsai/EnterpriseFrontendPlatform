@@ -1,4 +1,4 @@
-# dynamicwebsite
+# webapp
 
 ## Project setup
 ```
