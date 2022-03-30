@@ -1,6 +1,6 @@
 {
-  "name": "asp.net",
-  "version": "1.0.0",
+  "name": "webapp",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -8,23 +8,23 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "bootstrap": "3.3.7",
     "core-js": "^3.8.3",
-    "jquery": "3.3.1",
-    "jquery-validation": "1.17.0",
-    "jquery-validation-unobtrusive": "3.2.10",
-    "vue": "^3.2.13"
+    "vue": "^3.2.13",
+    "vue-class-component": "^8.0.0-0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-plugin-typescript": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
-    "del": "^3.0.0",
+    "@vue/eslint-config-typescript": "^9.1.0",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
-    "gulp": "^4.0.2"
+    "typescript": "~4.5.5"
   },
   "eslintConfig": {
     "root": true,
@@ -33,10 +33,11 @@
     },
     "extends": [
       "plugin:vue/vue3-essential",
-      "eslint:recommended"
+      "eslint:recommended",
+      "@vue/typescript"
     ],
     "parserOptions": {
-      "parser": "@babel/eslint-parser"
+      "parser": "@typescript-eslint/parser"
     },
     "rules": {}
   },
@@ -45,7 +46,5 @@
     "last 2 versions",
     "not dead",
     "not ie 11"
-  ],
-  "_id": "asp.net@1.0.0",
-  "readme": "ERROR: No README data found!"
+  ]
 }

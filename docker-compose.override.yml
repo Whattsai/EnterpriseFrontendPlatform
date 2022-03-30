@@ -29,22 +29,12 @@ services:
   dapr-placement:
     command: ["./placement", "-port", "50006", "-log-level", "debug"]
 
-  #vue:
-  #  working_dir: /www
-  #  command: bash -c "npm run dev"
-  #  volumes:
-  #    - ./web:/www
-  #  ports:
-  #    - 10000:80
-
-  #webmvc:
-  #  environment:
-  #    - ASPNETCORE_ENVIRONMENT=Development
-  #  ports:
-  #    - "10000:80"
-  #  volumes:
-  #    - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-  #    - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+  dynamicwebsite:
+    ports:
+      - "8080:8080"
+    volumes:
+       - ./webapp:/app
+       - /app/node_modules
 
   web.actions.aggregator:
     environment:
