@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Actions.Aggregator.Controllers
 {
+    /// <summary>
+    /// CalculateController
+    /// </summary>
     [Route("[controller]")]
     [ApiController]
     public class CalculateController : ControllerBase
