@@ -155,7 +155,7 @@
 
 <script lang="ts">
     // import { Options, Vue } from 'vue-class-component';
-    import HelloWorld from './components/HelloWorld.vue';
+  /*  //*/import HelloWorld from './components/HelloWorld.vue';
     import './css/style.css';
     import './css/YearEndBonusesreset.css';
     import './css/YearEndBonusesstyle.css';
