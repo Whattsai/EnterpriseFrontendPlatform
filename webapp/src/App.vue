@@ -1,18 +1,18 @@
 ﻿<template>
     <img alt="Vue logo" src="./assets/logo.png">
     <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
-    <div id="App" oa-initail="true" oa-source="info" oa-post="http://abcde{empNo}">
+    <div oa-initail="oaPost(1,'method1',url:empID, empNo)">
         <section class="content-wrapper main-content clear-fix">
 
             <div class="wrap supplycontent">
                 <div class="sub-wrap sub-wrap-shadow sub-wrap-color">
                     <div class="container">
                         <div class="info">
-                            <h2 class="title-header">{{ Title }}</h2>
+                            <h2 class="title-header">{{ Person.Title }}</h2>
                             <div class="contents">
                                 <p>
                                     現況服務部門:
-                                    <span id="MainContent_lbl">{{ EMP_Department }}</span>
+                                    <span id="MainContent_lbl">{{ Person.EMP_Department }}</span>
                                 </p>
                                 <p>
                                     發薪單位：
@@ -34,7 +34,7 @@
                                         </tr>
                                         <tr>
                                             <th style="width: 100px;">
-                                                <span id="MainContent_lblEmpSN">{{EMP_No}}</span>
+                                                <span id="MainContent_lblEmpSN">{{Person.EMP_No}}</span>
                                             </th>
                                             <th style="width: 100px;">
                                                 <span id="MainContent_lblEmpName">OOO</span>
@@ -101,7 +101,7 @@
 
                                     </div>
                                 </div>
-                                <span class="bounses_title" id="bounses_title">年度薪酬</span>
+                                <span class="bounses_title" id="bounses_title" v-on:click="automapp()">年度薪酬</span>
                                 <table class="supplycontent-table-data">
                                     <tbody>
                                         <tr>
@@ -112,7 +112,7 @@
                                     </tbody>
                                 </table>
 
-                                <div id="sShowYearSalary">
+                                <div id="sShowYearSalary" v-on:click="oapost('bgkey','Title','EMP_Department')">
                                     <div id="ShowYearS">
                                         <span class="bounses_title" id="bounses_title">2021年度薪酬明細</span>
                                         <span id="MainContent_lbSalarytable"><table class="supplycontent-table-data"><tbody><tr><th class="colored-bg">固定薪</th><th>500,000</th></tr><tr><th class="colored-bg">年終獎金</th><th>100,000</th></tr><tr><th class="colored-bg">員工儲蓄會獎勵儲金</th><th>24,000</th></tr><tr><th class="colored-bg">其他薪資</th><th>4,500</th></tr><tr><th class="colored-bg">加值班費</th><th>1000</th></tr><tr><th class="colored-bg">員工酬勞</th><th>100,000</th></tr><tr><th class="colored-bg">年節福利金</th><th>15,000</th></tr></tbody></table></span>
@@ -151,63 +151,104 @@
 
         </section>
     </div>
+
 </template>
 
 <script lang="ts">
-    // import { Options, Vue } from 'vue-class-component';
-  /*  //*/import HelloWorld from './components/HelloWorld.vue';
+    //***必要import***
+    import { Options, Vue } from 'vue-class-component';
+    import moment from 'moment'
+    import 'reflect-metadata';
+    import 'es6-shim';
+    import { /*plainToClass,*/ classToPlain, deserialize, plainToClassFromExist } from "class-transformer";
+    import axios from 'axios';
+
+    //***其餘css & vue***
+    import HelloWorld from './components/HelloWorld.vue';
     import './css/style.css';
     import './css/YearEndBonusesreset.css';
     import './css/YearEndBonusesstyle.css';
 
-    export default {
-        name: 'App',
+
+    @Options({
         components: {
-            HelloWorld
+            HelloWorld,
         },
-        data() {
-            return {
-                Title: "年終獎金查詢",
-                EMP_Department: "資訊處 後勤資訊發展中心 E32-OA2",
-                EMP_No: "00000",
-            };
-        },
-        mounted:
-        {
+    })
+    export default class App extends Vue {
 
-        },
-        methods: {
-            initail() {
+        Person: Person = new Person();
 
-            },
-            post() {
+        mounted() {
+            console.log('mounted');
+            console.log(moment().fromNow());
+            this.oapost("A", "Title", "ID");
+            this.auto_mapp();
+        }
 
-            },
-            get() {
+        initail() {
+            //依照OA-Iinitial順序排列
+            this.oapost("Key1", "A", "B", "C", "D", "E");
+            this.oapost("Key2", "XXX", "OOO");
+        }
 
-            },
-            click1() {
-
-            },
-            click2() {
-
+        method1(...perameters: string[]) {
+            for (var i = 0; i < perameters.length; i++) {
+                console.log(perameters[i]);
             }
         }
+
+        //OA預設方法
+        oapost(executeKey: string, ...perameters: string[]) {
+            var jsonstring = "{";
+            for (var i = 0; i < perameters.length; i++) {
+                if (i > 0) {
+                    jsonstring += ',';
+                }
+                const key = perameters[i] as keyof Person;
+                //依照參數組PostData Json字串再轉object
+                jsonstring += '"' + perameters[i] + '":"' + this.Person[key] + '"';
+                console.log(perameters[i] + ":" + this.Person[key]);
+            }
+            jsonstring += "}"
+            console.log(jsonstring);
+            var postData = JSON.parse(jsonstring);
+
+            console.log(postData);
+
+            axios({
+                method: 'post',
+                url: 'https://hexschool-tutorial.herokuapp.com/api/signup',
+                //API要求的資料
+                data: postData
+            }).then((response) => console.log(response))
+        }
+
+        auto_mapp() {
+            //json from ajax -> to this.data but transType has been necessary
+            let p = deserialize(Person, '{"Title":"抬頭","ABC":"XX"}');
+            const multiJson = classToPlain(p);
+            plainToClassFromExist(this.Person, multiJson);
+            console.log(this.Person.Title);
+        }
     }
-    //@Options({
-    //    components: {
-    //        HelloWorld,
-    //    },
-    //})
-    //export default class App extends Vue {
-    //    data() {
-    //        return {
-    //            title: "年終獎金查詢",
-    //            EMP_Department: "資訊處 後勤資訊發展中心 E32-OA2",
-    //            count: 6
-    //        };
-    //    }
-    //}
+
+    class Person {
+        Title: string = "年終獎金查詢";
+        ID: string = "1234567";
+        EMP_Department: string = "資訊處 後勤資訊發展中心 E32-OA2";
+        EMP_No: string = "00000";
+        A: A = new A();
+        Aarray: A[] = new Array<A>();
+        StringArray: string[] = new Array<string>();
+        NumberArray: number[] = new Array<number>();
+        B: boolean = false;
+    }
+
+    class A {
+        X: string = '';
+        Y: string = '';
+    }
 </script>
 
 <style>

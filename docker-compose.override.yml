@@ -34,7 +34,7 @@ services:
       - "8080:8080"
     volumes:
        - ./webapp:/app
-       - /app/node_modules
+       - /app/src/node_modules
 
   web.actions.aggregator:
     environment:
