@@ -2,8 +2,8 @@ import { Companies } from "./Companies";
 import { ER } from "./ER";
 import { Memo } from "./Memo";
 export class BonusInfo {
-Selected : string = '';
 Department : string = '';
+Selected : string = '';
 Companies : Companies[] = new Array<Companies>();
 ID : number = 0;
 Name : string = '';

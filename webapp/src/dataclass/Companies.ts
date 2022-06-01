@@ -1,3 +1,3 @@
 export class Companies {
-Name : string = '';
+ID : string = '';
 }
