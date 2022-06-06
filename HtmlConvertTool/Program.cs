@@ -20,19 +20,22 @@ var initialNodes = doc.DocumentNode.SelectNodes($"//*[@dyweb-initial]");
 
 for (int i = 0; i < initialNodes.Count; i++)
 {
+    //DetailVue  檔名
+    string fileName = $"dyweb_{i.IntToLetters()}";
+
     HtmlNode? node = initialNodes[i];
 
-    //產生DataClassList
-    _dataClassNameByWebInitial.Add($"dyweb_{i.IntToLetters()}", OACommunicate.CreateDataClassInfoByWebInitial(node, out mainDataClassName));
+    //產生DataClass.ts
+    _dataClassNameByWebInitial.Add(fileName, OACommunicate.CreateDataClassInfoByWebInitial(node, out mainDataClassName));
 
     //產生InitialData
-    _initialDataByWebInitial.Add($"dyweb_{i.IntToLetters()}", OACommunicate.CreateDywebInitialData(node));
+    _initialDataByWebInitial.Add(fileName, OACommunicate.CreateDywebInitialData(node));
 
     //產生watchData
-    _watchDataByWebInitial.Add($"dyweb_{i.IntToLetters()}", OACommunicate.CreateDywebWatchData(node));
+    _watchDataByWebInitial.Add(fileName, OACommunicate.CreateDywebWatchData(node));
 
     //產生Detail Vue檔的Ts內容
-    OACommunicate.AppendTypeScriptToVue($"dyweb_{i.IntToLetters()}", _initialDataByWebInitial[$"dyweb_{i.IntToLetters()}"], _watchDataByWebInitial[$"dyweb_{i.IntToLetters()}"], _dataClassNameByWebInitial[$"dyweb_{i.IntToLetters()}"], mainDataClassName);
+    OACommunicate.AppendTypeScriptToVue(fileName, _initialDataByWebInitial[fileName], _watchDataByWebInitial[fileName], _dataClassNameByWebInitial[fileName], mainDataClassName);
 }
 
 //產生index.html檔 & App.Vue
