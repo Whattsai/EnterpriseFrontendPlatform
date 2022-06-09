@@ -9,7 +9,7 @@ services:
   #    - "5672:5672"
   #redis:
   #  ports:
-  #    - "5379:6379"
+  #    - "6379:6379"
   #seq:
   #  environment:
   #    - ACCEPT_EULA=Y
@@ -29,12 +29,12 @@ services:
   dapr-placement:
     command: ["./placement", "-port", "50006", "-log-level", "debug"]
 
-  dynamicwebsite:
-    ports:
-      - "8080:8080"
-    volumes:
-       - ./webapp:/app
-       - /app/node_modules
+  #dynamicwebsite:
+  #  ports:
+  #    - "8080:8080"
+  #  volumes:
+  #     - ./webapp:/app
+  #     - /app/node_modules
 
   web.actions.aggregator:
     environment:
@@ -48,22 +48,23 @@ services:
       "-components-path", "/components"
       ]
     volumes:
-      - "./:/components"
+      - "./dapr/components/:/components"
 
   rulecollections.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      #- 5003:80
-      - "51000:51000"
+      - "5003:80"
+      #- "51000:51000"
   rulecollections.api-dapr:
     command: ["./daprd",
       "-app-id", "logicapi",
-      #"-app-port", "80",
-      "-app-port", "51000",
-      "-app-protocol", "grpc",
+      "-app-port", "80",
+      #"-app-port", "51000",
+      #"-app-protocol", "grpc",
       "-placement-host-address","placement:50006",
       "-components-path", "/components"
       ]
     volumes:
-      - "./:/components"
+      - "./dapr/components/:/components"
+

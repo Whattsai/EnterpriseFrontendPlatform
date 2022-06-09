@@ -25,11 +25,11 @@ services:
     networks:
       - efp-dapr
 
-  dynamicwebsite:
-    image: dynamicwebsite
-    build:
-      context: ./webapp
-      dockerfile: Dockerfile
+  #dynamicwebsite:
+  #  image: dynamicwebsite
+  #  build:
+  #    context: ./webapp
+  #    dockerfile: Dockerfile
 
 # Deploy self customized app daprized services
 
@@ -37,7 +37,7 @@ services:
     image: ${DOCKER_REGISTRY-}webactionsaggregator
     build:
       context: .
-      dockerfile: Web.Actions.Aggregator/Dockerfile
+      dockerfile: src/Web Apps/ApiGateways/Web.Actions.Aggregator/Dockerfile
     networks:
       - efp-dapr
   web.actions.aggregator-dapr:
@@ -50,7 +50,7 @@ services:
     image: ${DOCKER_REGISTRY-}rulecollectionsapi
     build:
       context: .
-      dockerfile: RuleCollections.API/Dockerfile
+      dockerfile: src/Web Apps/Services/CoreProcess/Logic/RuleCollections.API/Dockerfile
     depends_on:
       - redis
     networks:
@@ -60,3 +60,4 @@ services:
     network_mode: "service:rulecollections.api"
     depends_on:
       - rulecollections.api
+
