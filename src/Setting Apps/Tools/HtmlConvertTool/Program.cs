@@ -1,78 +1,105 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
+using HtmlConvertTool;
 using HtmlConvertTool.DataClass;
 
+Dictionary<string, List<string>> _dataClassNameByWebInitial = new Dictionary<string, List<string>>();
+Dictionary<string, Queue<AggrPostInfo>> _initialDataByWebInitial = new Dictionary<string, Queue<AggrPostInfo>>();
+Dictionary<string, Dictionary<string, AggrPostInfo>> _watchDataByWebInitial = new Dictionary<string, Dictionary<string, AggrPostInfo>>();
 
-List<string> DataclassList = new List<string>();
 string mainDataClassName = "";
 
 //使用預設編碼讀入 HTML
 HtmlDocument doc = new HtmlDocument();
 doc.Load(@"Example\e-HR 玉山人園地.html");
 
-//產生DataClassList
-DataclassList = OACommunicate.CreateDataClassList(doc, out mainDataClassName);
+//產生 Detail Vue 檔
+OACommunicate.CreateDetailVue(doc);
 
-//產生Detail Vue檔
-OACommunicate.CreateDetailVue(doc, "dyweb-initial");
+//依 dyweb-initial 分別取得底下 Node
+var initialNodes = doc.DocumentNode.SelectNodes($"//*[@dyweb-initial]");
 
-//產生InitialData
-var initialData = OACommunicate.CreateDywebInitialData(doc, "dyweb-initial");
+for (int i = 0; i < initialNodes.Count; i++)
+{
+    HtmlNode? node = initialNodes[i];
 
-//產生SelectInitialData
-var selectInitialData = OACommunicate.CreateDywebInitialData(doc, "dyweb-selectinitial");
+    //產生DataClassList
+    _dataClassNameByWebInitial.Add($"dyweb_{i.IntToLetters()}", OACommunicate.CreateDataClassInfoByWebInitial(node, out mainDataClassName));
 
-//產生watchData
-var watchData = OACommunicate.CreateDywebWatchData(doc, "dyweb-watch");
+    //產生InitialData
+    _initialDataByWebInitial.Add($"dyweb_{i.IntToLetters()}", OACommunicate.CreateDywebInitialData(node));
 
-//產生Detail Vue檔的Ts內容
-OACommunicate.AppendTypeScriptToVue(initialData, selectInitialData, watchData, DataclassList, mainDataClassName);
+    //產生watchData
+    _watchDataByWebInitial.Add($"dyweb_{i.IntToLetters()}", OACommunicate.CreateDywebWatchData(node));
+
+    //產生Detail Vue檔的Ts內容
+    OACommunicate.AppendTypeScriptToVue($"dyweb_{i.IntToLetters()}", _initialDataByWebInitial[$"dyweb_{i.IntToLetters()}"], _watchDataByWebInitial[$"dyweb_{i.IntToLetters()}"], _dataClassNameByWebInitial[$"dyweb_{i.IntToLetters()}"], mainDataClassName);
+}
 
 //產生index.html檔 & App.Vue
-OACommunicate.CreateIndex(doc, "dyweb-initial");
+OACommunicate.CreateIndex(doc);
 
 Console.ReadLine();
 
 
 public static class OACommunicate
 {
-    public static List<AggrPostInfo> CreateDywebInitialData(HtmlDocument htmlDocument, string attributeName)
+    /// <summary>
+    /// 準備 dyweb-initial、dyweb-selectinitial 觸發方法的資料
+    /// </summary>
+    /// <param name="node">HtmlNode</param>
+    /// <returns></returns>
+    public static Queue<AggrPostInfo> CreateDywebInitialData(HtmlNode node)
     {
-        //oa-initial 會觸發的方法
-        List<AggrPostInfo> InitialData = new List<AggrPostInfo>();
+        Queue<AggrPostInfo> InitialData = new Queue<AggrPostInfo>();
 
-        var htmlNodes = htmlDocument.DocumentNode.SelectNodes($"//*[@{attributeName}]");
+        AggrPostInfo dywebInitial = new AggrPostInfo();
 
-        foreach (var item in htmlNodes)
+        string[] perameter = node.GetAttributeValue($"dyweb-initial", "default").Replace("Aggr_Post(", "").Replace(")", "").Split(",");
+
+        dywebInitial.ExecuteKey = perameter[0];
+
+        for (int j = 1; j < perameter.Length; j++)
         {
-            AggrPostInfo dywebInitial = new AggrPostInfo();
+            dywebInitial.Perameter.Add(perameter[j]);
+        }
 
-            string[] perameter = item.GetAttributeValue($"{attributeName}", "default").Replace("Aggr_Post(", "").Replace(")", "").Split(",");
+        InitialData.Enqueue(dywebInitial);
 
-            dywebInitial.ExecuteKey = perameter[0];
+        foreach (var selectinitialNode in node.SelectNodes($".//*[@dyweb-selectinitial]"))
+        {
+            AggrPostInfo dywebInitial2 = new AggrPostInfo();
 
-            for (int i = 1; i < perameter.Length; i++)
+            string[] perameter2 = selectinitialNode.GetAttributeValue($"dyweb-selectinitial", "default").Replace("Aggr_Post(", "").Replace(")", "").Split(",");
+
+            dywebInitial2.ExecuteKey = perameter2[0];
+
+            for (int j = 1; j < perameter2.Length; j++)
             {
-                dywebInitial.Perameter.Add(perameter[i]);
+                dywebInitial2.Perameter.Add(perameter2[j]);
             }
 
-            InitialData.Add(dywebInitial);
+            InitialData.Enqueue(dywebInitial2);
         }
 
         return InitialData;
     }
 
-    public static Dictionary<string, AggrPostInfo> CreateDywebWatchData(HtmlDocument htmlDocument, string attributeName)
+    /// <summary>
+    /// 準備 dy-watch 觸發方法的資料
+    /// </summary>
+    /// <param name="node">HtmlNode</param>
+    /// <returns></returns>
+    public static Dictionary<string, AggrPostInfo> CreateDywebWatchData(HtmlNode node)
     {
         Dictionary<string, AggrPostInfo> watchData = new Dictionary<string, AggrPostInfo>();
 
-        var htmlNodes = htmlDocument.DocumentNode.SelectNodes($"//*[@{attributeName}]");
+        var htmlNodes = node.SelectNodes($".//*[@dyweb-watch]");
 
         foreach (var item in htmlNodes)
         {
             AggrPostInfo dywebInitial = new AggrPostInfo();
 
-            string nodeString = item.GetAttributeValue($"{attributeName}", "default");
+            string nodeString = item.GetAttributeValue($"dyweb-watch", "default");
 
             string key = nodeString.Split(",")[0];
 
@@ -93,16 +120,19 @@ public static class OACommunicate
         return watchData;
     }
 
-    public static void CreateDetailVue(HtmlDocument htmlDocument, string attributeName)
+    /// <summary>
+    /// 初始化 DetailVue 檔案
+    /// </summary>
+    /// <param name="htmlDocument"></param>
+    public static void CreateDetailVue(HtmlDocument htmlDocument)
     {
-        //oa-initial 會觸發的方法
         List<string> InnerHTMLs = new List<string>();
 
-        var htmlNodes = htmlDocument.DocumentNode.SelectNodes($"//*[@{attributeName}]");
+        var htmlNodes = htmlDocument.DocumentNode.SelectNodes($"//*[@dyweb-initial]");
 
         for (int i = 0; i < htmlNodes.Count; i++)
         {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter($@"D:\GitProject\EnterpriseFrontendPlatform\webapp\src\components\dyweb_{IntToLetters(i)}.vue", false))
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter($@"D:\GitProject\EnterpriseFrontendPlatform\webapp\src\components\dyweb_{i.IntToLetters()}.vue", false))
             {
                 file.WriteLine("<template>");
                 file.WriteLine(htmlNodes[i].InnerHtml);
@@ -111,12 +141,21 @@ public static class OACommunicate
         }
     }
 
-    public static List<string> CreateDataClassList(HtmlDocument htmlDocument, out string mainDataClassName)
+    /// <summary>
+    /// 準備 DataClass 資料並建立檔案
+    /// </summary>
+    /// <param name="node"></param>
+    /// <param name="mainDataClassName"></param>
+    /// <returns></returns>
+    public static List<string> CreateDataClassInfoByWebInitial(HtmlNode node, out string mainDataClassName)
     {
         mainDataClassName = "";
-        List<DataClass> dataClassList = new List<DataClass> { };
+        Dictionary<string, List<string>> dataClassDic = new Dictionary<string, List<string>>();
 
-        var htmlNodes = htmlDocument.DocumentNode.SelectNodes($"//*[@dyweb-model]");
+        List<DataClass> dataClassInfos = new List<DataClass>();
+
+        //參數最前面加【.】才會限縮在子階層內
+        var htmlNodes = node.SelectNodes($".//*[@dyweb-model]");
 
         if (htmlNodes == null) return null;
 
@@ -130,7 +169,6 @@ public static class OACommunicate
             {
                 levelArray = item.GetAttributeValue($"v-for", "default").Split("in").LastOrDefault().Trim().Split(".");
             }
-
             else
             {
                 levelArray = item.InnerHtml.Replace("{{", "").Replace("}}", "").Split(".");
@@ -148,9 +186,9 @@ public static class OACommunicate
 
                 dataclass.ParentClassName = levelArray[objectLevel - 2].FirstCharToUpper(); ;
 
-                if (!dataClassList.Contains(dataclass))
+                if (!dataClassInfos.Contains(dataclass))
                 {
-                    dataClassList.Add(dataclass);
+                    dataClassInfos.Add(dataclass);
                 }
 
                 objectLevel -= 1;
@@ -160,12 +198,9 @@ public static class OACommunicate
             mainDataClassName = levelArray[0];
         }
 
-
-
-        //SELECT  var htmlNodes = htmlDocument.DocumentNode.SelectNodes($"//*[@oa-data-vfor]");
         //依據此標籤判斷parent層級及型別後寫入dataClassList
 
-        htmlNodes = htmlDocument.DocumentNode.SelectNodes($"//*[@dyweb-model-vfor]");
+        htmlNodes = node.SelectNodes($".//*[@dyweb-model-vfor]");
 
         if (htmlNodes == null) return null;
 
@@ -181,95 +216,77 @@ public static class OACommunicate
 
             dataclass.ParentClassName = stringType.Split(",")[0].Trim();
 
-            if (!dataClassList.Contains(dataclass))
+            if (!dataClassInfos.Contains(dataclass))
             {
-                dataClassList.Add(dataclass);
+                dataClassInfos.Add(dataclass);
             }
         }
 
-
-
-        Dictionary<string, List<PropertyInfo>> typeScriptClassInfo = new Dictionary<string, List<PropertyInfo>>();
-
-        foreach (var item in dataClassList)
-        {
-            List<PropertyInfo> propertyInfos;
-
-            if (typeScriptClassInfo.TryGetValue(item.ParentClassName, out propertyInfos))
-            {
-                propertyInfos.Add(item.PropertyInfo);
-            }
-            else
-            {
-                propertyInfos = new List<PropertyInfo>() { item.PropertyInfo };
-
-                typeScriptClassInfo.Add(item.ParentClassName, propertyInfos);
-            }
-        }
+        Dictionary<string, List<DataClass>> typeScriptClassInfo = dataClassInfos.GroupBy(o => o.ParentClassName).ToDictionary(o => o.Key, o => o.ToList());
 
         foreach (var item in typeScriptClassInfo)
         {
             using (System.IO.StreamWriter file = new System.IO.StreamWriter($@"D:\GitProject\EnterpriseFrontendPlatform\webapp\src\dataclass\{item.Key}.ts", false))
             {
 
-                foreach (var objectItem in item.Value.FindAll(o => o.Type == "object" || o.Type == "object[]"))
+                foreach (var objectItem in item.Value.FindAll(o => o.PropertyInfo.Type == "object" || o.PropertyInfo.Type == "object[]"))
                 {
-                    file.WriteLine($"import {{ {objectItem.Name} }} from \"./{ objectItem.Name}\";");
+                    file.WriteLine($"import {{ {objectItem.PropertyInfo.Name} }} from \"./{ objectItem.PropertyInfo.Name}\";");
                 }
 
                 file.WriteLine($"export class {item.Key} " + "{");
 
-                foreach (var propertyInfo in item.Value)
+                foreach (var value in item.Value)
                 {
 
-                    switch (propertyInfo.Type)
+                    switch (value.PropertyInfo.Type)
                     {
 
                         case "string":
 
-                            file.WriteLine($"{propertyInfo.Name} : string = '';");
+                            file.WriteLine($"{value.PropertyInfo.Name} : string = '';");
 
                             break;
 
                         case "string[]":
 
-                            file.WriteLine($"{propertyInfo.Name} : string[] = new Array<string>();");
+                            file.WriteLine($"{value.PropertyInfo.Name} : string[] = new Array<string>();");
 
                             break;
 
                         case "number":
 
-                            file.WriteLine($"{propertyInfo.Name} : number = 0;");
+                            file.WriteLine($"{value.PropertyInfo.Name} : number = 0;");
 
                             break;
 
                         case "number[]":
 
-                            file.WriteLine($"{propertyInfo.Name} : number[] = new Array<number>();");
+                            file.WriteLine($"{value.PropertyInfo.Name} : number[] = new Array<number>();");
 
                             break;
 
                         case "boolean":
 
-                            file.WriteLine($"{propertyInfo.Name} : boolean = false;");
+                            file.WriteLine($"{value.PropertyInfo.Name} : boolean = false;");
 
                             break;
 
                         case "boolean[]":
 
-                            file.WriteLine($"{propertyInfo.Name} : boolean[] = new Array<boolean>();");
+                            file.WriteLine($"{value.PropertyInfo.Name} : boolean[] = new Array<boolean>();");
 
                             break;
 
                         case "object":
 
-                            file.WriteLine($"{propertyInfo.Name} : {propertyInfo.Name} = new {propertyInfo.Name}();");
+                            file.WriteLine($"{value.PropertyInfo.Name} : {value.PropertyInfo.Name} = new {value.PropertyInfo.Name}();");
 
                             break;
 
                         case "object[]":
 
-                            file.WriteLine($"{propertyInfo.Name} : {propertyInfo.Name}[] = new Array<{propertyInfo.Name}>();");
+                            file.WriteLine($"{value.PropertyInfo.Name} : {value.PropertyInfo.Name}[] = new Array<{value.PropertyInfo.Name}>();");
 
                             break;
 
@@ -281,110 +298,115 @@ public static class OACommunicate
                 }
 
                 file.WriteLine("}");
-
             }
         }
 
         return typeScriptClassInfo.Select(o => o.Key).ToList();
     }
 
-    public static void AppendTypeScriptToVue(List<AggrPostInfo> initialInfos, List<AggrPostInfo> selectInitialInfos, Dictionary<string, AggrPostInfo> watchData, List<string> dataClasses, string mainDataClassName)
+    /// <summary>
+    /// 附加 TypeScript 程式碼至 DetailVue 檔案
+    /// </summary>
+    /// <param name="vueName"></param>
+    /// <param name="initialInfos"></param>
+    /// <param name="watchData"></param>
+    /// <param name="dataClasses"></param>
+    /// <param name="mainDataClassName"></param>
+    public static void AppendTypeScriptToVue(string vueName, Queue<AggrPostInfo> initialInfos, Dictionary<string, AggrPostInfo> watchData, List<string> dataClasses, string mainDataClassName)
     {
-        for (int i = 0; i < initialInfos.Count(); i++)
+        using (System.IO.StreamWriter file = new System.IO.StreamWriter($@"D:\GitProject\EnterpriseFrontendPlatform\webapp\src\components\{vueName}.vue", true))
         {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter($@"D:\GitProject\EnterpriseFrontendPlatform\webapp\src\components\dyweb_{IntToLetters(i)}.vue", true))
+            file.WriteLine("<script lang='ts'>");
+            file.WriteLine("import { watch, reactive, defineComponent } from 'vue';");
+            file.WriteLine("import 'reflect-metadata';");
+            file.WriteLine("import 'es6-shim';");
+            file.WriteLine("import { classToPlain, deserialize, plainToClassFromExist } from 'class-transformer';");
+            file.WriteLine("import axios from 'axios';");
+            foreach (var item in dataClasses)
             {
-                file.WriteLine("<script lang='ts'>");
-                file.WriteLine("import { watch, reactive, defineComponent } from 'vue';");
-                file.WriteLine("import 'reflect-metadata';");
-                file.WriteLine("import 'es6-shim';");
-                file.WriteLine("import { classToPlain, deserialize, plainToClassFromExist } from 'class-transformer';");
-                file.WriteLine("import axios from 'axios';");
-                foreach (var item in dataClasses)
-                {
-                    file.WriteLine($"import {{{ item }}} from '../dataclass/{item}';");
-                }
-
-                file.WriteLine("");
-
-                file.WriteLine($"export default defineComponent ({{");
-                file.WriteLine("setup() {");
-
-                file.WriteLine("");
-
-                /** dyweb-Model */
-                //foreach (var item in dataClasses)
-                //{
-                //    file.WriteLine($"const {item} = reactive(new {item}());");
-                //}
-
-                file.WriteLine($"const {mainDataClassName} = reactive(new {mainDataClassName.FirstCharToUpper()}());");
-
-                file.WriteLine("");
-
-                /** dyweb-Watch */
-                foreach (var item in watchData)
-                {
-                    string postPeram = String.Join(", ", item.Value.Perameter);
-                    file.WriteLine($"watch(() =>{item.Key}, (newValue, oldValue) => {{");
-                    file.WriteLine($"Aggr_Post({item.Value.ExecuteKey},{postPeram})");
-                    file.WriteLine("});");
-                }
-
-                file.WriteLine("");
-
-                file.WriteLine("");
-
-                /** Aggr_Post */
-                file.WriteLine("const Aggr_Post = (executeKey: string, ...perameters: string[]) => {");
-                file.WriteLine("var jsonstring = \"{ \";");
-                file.WriteLine("for (var i = 0; i < perameters.length; i++) {");
-                file.WriteLine("if (i > 0) { jsonstring += ',' }");
-                file.WriteLine("if (perameters[i].includes('url:')) {");
-                file.WriteLine("const paramInfo = perameters[i].replace(\"url: \", \"\").split(':');");
-                file.WriteLine("const urlParams = new URLSearchParams(window.location.search);");
-                file.WriteLine("const paramValue = urlParams.get(paramInfo[0]);");
-                file.WriteLine("jsonstring += '\"' + paramInfo[1] + '\":\"' + paramValue + '\"';");
-                file.WriteLine("} else {");
-                file.WriteLine($"const key = perameters[i] as keyof {mainDataClassName.FirstCharToUpper()};");
-                file.WriteLine($"jsonstring += '\"' + perameters[i] + '\":\"' + {mainDataClassName}[key] + '\"';");
-                file.WriteLine("}}");
-                file.WriteLine("jsonstring += \"} \";");
-                file.WriteLine("var postData = JSON.parse(jsonstring);");
-                file.WriteLine(" const automapp = (jsonData: any) => {");
-                file.WriteLine(" const multiJson = classToPlain(jsonData);");
-                file.WriteLine($" plainToClassFromExist({mainDataClassName}, multiJson);");
-                file.WriteLine(" }");
-                file.WriteLine(" axios.post('https://localhost:7080/api/Values/BonusInfo', postData)");
-                file.WriteLine($" .then((response) => automapp(response.data));");
-                file.WriteLine("}");
-
-                file.WriteLine("");
-
-                /** dyweb-Initial */
-                string postPerameter = String.Join(", ", initialInfos[i].Perameter);
-                file.WriteLine($"Aggr_Post(\"{initialInfos[i].ExecuteKey}\",{postPerameter})");
-
-                file.WriteLine("");
-
-                /** dyweb-SelectInitial */
-                string postPeram2 = String.Join(", ", selectInitialInfos[i].Perameter);
-                file.WriteLine($"Aggr_Post(\"{selectInitialInfos[i].ExecuteKey}\",{postPeram2})");
-
-
-                file.WriteLine("");
-
-                /** returm */
-                file.WriteLine($"return {{ {mainDataClassName}, Aggr_Post }}");
-                file.WriteLine("}");
-                file.WriteLine("})");
-            
-                file.WriteLine("</script>");
+                file.WriteLine($"import {{{ item }}} from '../dataclass/{item}';");
             }
+
+            file.WriteLine("");
+
+            file.WriteLine($"export default defineComponent ({{");
+            file.WriteLine("setup() {");
+
+            file.WriteLine("");
+
+
+            file.WriteLine($"const {mainDataClassName} = reactive(new {mainDataClassName.FirstCharToUpper()}());");
+
+            file.WriteLine("");
+
+            /** dyweb-Watch */
+            foreach (var item in watchData)
+            {
+                string postPeram = String.Join(", ", item.Value.Perameter);
+                file.WriteLine($"watch(() =>{item.Key}, (newValue, oldValue) => {{");
+                file.WriteLine($"Aggr_Post({item.Value.ExecuteKey},{postPeram})");
+                file.WriteLine("});");
+            }
+
+            file.WriteLine("");
+
+            file.WriteLine("");
+
+            /** Aggr_Post */
+            file.WriteLine("const Aggr_Post = (executeKey: string, ...perameters: string[]) => {");
+            file.WriteLine("var jsonstring = \"{ \";");
+            file.WriteLine("for (var i = 0; i < perameters.length; i++) {");
+            file.WriteLine("if (i > 0) { jsonstring += ',' }");
+            file.WriteLine("if (perameters[i].includes('url:')) {");
+            file.WriteLine("const paramInfo = perameters[i].replace(\"url: \", \"\").split(':');");
+            file.WriteLine("const urlParams = new URLSearchParams(window.location.search);");
+            file.WriteLine("const paramValue = urlParams.get(paramInfo[0]);");
+            file.WriteLine("jsonstring += '\"' + paramInfo[1] + '\":\"' + paramValue + '\"';");
+            file.WriteLine("} else {");
+            file.WriteLine($"const key = perameters[i] as keyof {mainDataClassName.FirstCharToUpper()};");
+            file.WriteLine($"jsonstring += '\"' + perameters[i] + '\":\"' + {mainDataClassName}[key] + '\"';");
+            file.WriteLine("}}");
+            file.WriteLine("jsonstring += \"} \";");
+            file.WriteLine("var postData = JSON.parse(jsonstring);");
+            file.WriteLine(" const automapp = (jsonData: any) => {");
+            file.WriteLine(" const multiJson = classToPlain(jsonData);");
+            file.WriteLine($" plainToClassFromExist({mainDataClassName}, multiJson);");
+            file.WriteLine(" }");
+            file.WriteLine(" axios.post('https://localhost:7080/api/Values/BonusInfo', postData)");
+            file.WriteLine($" .then((response) => automapp(response.data));");
+            file.WriteLine("}");
+
+            file.WriteLine("");
+
+            /** dyweb-Initial & SelectInitial */
+            while (initialInfos.Any())
+            {
+                AggrPostInfo initialInfo = initialInfos.Dequeue();
+                string postPerameter = String.Join(", ", initialInfo.Perameter);
+                file.WriteLine($"Aggr_Post(\"{initialInfo.ExecuteKey}\",{postPerameter})");
+
+                file.WriteLine("");
+            }
+
+
+
+            file.WriteLine("");
+
+            /** returm */
+            file.WriteLine($"return {{ {mainDataClassName}, Aggr_Post }}");
+            file.WriteLine("}");
+            file.WriteLine("})");
+
+            file.WriteLine("</script>");
         }
+
     }
 
-    public static void CreateIndex(HtmlDocument htmlDocument, string attributeName)
+    /// <summary>
+    /// 建立Index.html
+    /// </summary>
+    /// <param name="htmlDocument"></param>
+    public static void CreateIndex(HtmlDocument htmlDocument)
     {
         var htmlNode = htmlDocument.GetElementbyId("app");
 
@@ -398,6 +420,11 @@ public static class OACommunicate
         }
     }
 
+    /// <summary>
+    /// 建立 App.Vue
+    /// </summary>
+    /// <param name="htmlNode"></param>
+    /// <param name="attributeName"></param>
     private static void CreateAppVue(HtmlNode htmlNode, string attributeName)
     {
         List<string> detailVueNames = new List<string>();
@@ -408,8 +435,8 @@ public static class OACommunicate
         }
         for (int i = 0; i < htmlNodes.Count(); i++)
         {
-            detailVueNames.Add($"dyweb_{ IntToLetters(i)}");
-            HtmlNode newChild = HtmlNode.CreateNode($"<dyweb_{IntToLetters(i)} />");
+            detailVueNames.Add($"dyweb_{i.IntToLetters()}");
+            HtmlNode newChild = HtmlNode.CreateNode($"<dyweb_{i.IntToLetters()} />");
             htmlNodes[i].ParentNode.ReplaceChild(newChild, htmlNodes[i]);
         }
 
@@ -438,46 +465,6 @@ public static class OACommunicate
         }
 
     }
-
-    /// <summary>
-    /// 數字轉英文字母
-    /// </summary>
-    /// <param name="value">數字</param>
-    /// <returns></returns>
-    private static string IntToLetters(int value)
-    {
-        value += 1;
-        string result = string.Empty;
-        while (--value >= 0)
-        {
-            result = (char)('a' + value % 26) + result;
-            value /= 26;
-        }
-        return result;
-    }
-
-    /// <summary>
-    /// 字首轉大寫
-    /// </summary>
-    private static string FirstCharToUpper(this string input) =>
-    input switch
-    {
-        null => throw new ArgumentNullException(nameof(input)),
-        "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
-        _ => input.First().ToString().ToUpper() + input.Substring(1)
-    };
-
-    /// <summary>
-    /// 字首轉小寫
-    /// </summary>
-    private static string FirstCharTolower(this string input) =>
-   input switch
-   {
-       null => throw new ArgumentNullException(nameof(input)),
-       "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
-       _ => input.First().ToString().ToUpper() + input.Substring(1)
-   };
-
 }
 
 
