@@ -1,6 +1,8 @@
 ﻿using HtmlAgilityPack;
 using HtmlConvertTool;
 using HtmlConvertTool.DataClass;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 Dictionary<string, List<string>> _dataClassNameByWebInitial = new Dictionary<string, List<string>>();
 Dictionary<string, Queue<AggrPostInfo>> _initialDataByWebInitial = new Dictionary<string, Queue<AggrPostInfo>>();
@@ -13,7 +15,7 @@ HtmlDocument doc = new HtmlDocument();
 doc.Load(@"Example\e-HR 玉山人園地.html");
 
 //產生 Detail Vue 檔
-OACommunicate.CreateDetailVue(doc);
+DyWebConvert.CreateDetailVue(doc);
 
 //依 dyweb-initial 分別取得底下 Node
 var initialNodes = doc.DocumentNode.SelectNodes($"//*[@dyweb-initial]");
@@ -26,25 +28,25 @@ for (int i = 0; i < initialNodes.Count; i++)
     HtmlNode? node = initialNodes[i];
 
     //產生DataClass.ts
-    _dataClassNameByWebInitial.Add(fileName, OACommunicate.CreateDataClassInfoByWebInitial(node, out mainDataClassName));
+    _dataClassNameByWebInitial.Add(fileName, DyWebConvert.CreateDataClassInfoByWebInitial(node, out mainDataClassName));
 
     //產生InitialData
-    _initialDataByWebInitial.Add(fileName, OACommunicate.CreateDywebInitialData(node));
+    _initialDataByWebInitial.Add(fileName, DyWebConvert.CreateDywebInitialData(node));
 
     //產生watchData
-    _watchDataByWebInitial.Add(fileName, OACommunicate.CreateDywebWatchData(node));
+    _watchDataByWebInitial.Add(fileName, DyWebConvert.CreateDywebWatchData(node));
 
     //產生Detail Vue檔的Ts內容
-    OACommunicate.AppendTypeScriptToVue(fileName, _initialDataByWebInitial[fileName], _watchDataByWebInitial[fileName], _dataClassNameByWebInitial[fileName], mainDataClassName);
+    DyWebConvert.AppendTypeScriptToVue(fileName, _initialDataByWebInitial[fileName], _watchDataByWebInitial[fileName], _dataClassNameByWebInitial[fileName], mainDataClassName);
 }
 
 //產生index.html檔 & App.Vue
-OACommunicate.CreateIndex(doc);
+DyWebConvert.CreateIndex(doc);
 
 Console.ReadLine();
 
 
-public static class OACommunicate
+public static class DyWebConvert
 {
     /// <summary>
     /// 準備 dyweb-initial、dyweb-selectinitial 觸發方法的資料
@@ -68,11 +70,11 @@ public static class OACommunicate
 
         InitialData.Enqueue(dywebInitial);
 
-        foreach (var selectinitialNode in node.SelectNodes($".//*[@dyweb-selectinitial]"))
+        foreach (var selectInitialNode in node.SelectNodes($".//*[@dyweb-selectinitial]"))
         {
             AggrPostInfo dywebInitial2 = new AggrPostInfo();
 
-            string[] perameter2 = selectinitialNode.GetAttributeValue($"dyweb-selectinitial", "default").Replace("Aggr_Post(", "").Replace(")", "").Split(",");
+            string[] perameter2 = selectInitialNode.GetAttributeValue($"dyweb-selectinitial", "default").Replace("Aggr_Post(", "").Replace(")", "").Split(",");
 
             dywebInitial2.ExecuteKey = perameter2[0];
 
@@ -152,79 +154,13 @@ public static class OACommunicate
     /// <returns></returns>
     public static List<string> CreateDataClassInfoByWebInitial(HtmlNode node, out string mainDataClassName)
     {
-        mainDataClassName = "";
-        Dictionary<string, List<string>> dataClassDic = new Dictionary<string, List<string>>();
-
-        List<DataClass> dataClassInfos = new List<DataClass>();
+        List<DataClass> dataClassInfos = DyWebConvert.AnalyticalNode(node);
+        mainDataClassName = dataClassInfos[0].ParentClassName;
 
         //參數最前面加【.】才會限縮在子階層內
-        var htmlNodes = node.SelectNodes($".//*[@dyweb-model]");
+        //var htmlNodes = node.SelectNodes($".//*[@dyweb-model]");
 
-        if (htmlNodes == null) return null;
-
-        foreach (var item in htmlNodes)
-        {
-            string stringType = item.GetAttributeValue($"dyweb-model", "default");
-
-            string[] levelArray;
-
-            if (stringType == "object[]")
-            {
-                levelArray = item.GetAttributeValue($"v-for", "default").Split("in").LastOrDefault().Trim().Split(".");
-            }
-            else
-            {
-                levelArray = item.InnerHtml.Replace("{{", "").Replace("}}", "").Split(".");
-            }
-
-            var objectLevel = levelArray.Length;
-
-            while (objectLevel >= 2)
-            {
-                DataClass dataclass = new DataClass();
-
-                dataclass.PropertyInfo.Type = stringType;
-
-                dataclass.PropertyInfo.Name = levelArray[objectLevel - 1];
-
-                dataclass.ParentClassName = levelArray[objectLevel - 2].FirstCharToUpper(); ;
-
-                if (!dataClassInfos.Contains(dataclass))
-                {
-                    dataClassInfos.Add(dataclass);
-                }
-
-                objectLevel -= 1;
-
-                stringType = "object";
-            }
-            mainDataClassName = levelArray[0];
-        }
-
-        //依據此標籤判斷parent層級及型別後寫入dataClassList
-
-        htmlNodes = node.SelectNodes($".//*[@dyweb-model-vfor]");
-
-        if (htmlNodes == null) return null;
-
-        foreach (var item in htmlNodes)
-        {
-            string stringType = item.GetAttributeValue($"dyweb-model-vfor", "default");
-
-            DataClass dataclass = new DataClass();
-
-            dataclass.PropertyInfo.Type = stringType.Split(",")[1].Trim();
-
-            dataclass.PropertyInfo.Name = item.InnerHtml.Replace("{{", "").Replace("}}", "").Split(".")[1].Trim();
-
-            dataclass.ParentClassName = stringType.Split(",")[0].Trim();
-
-            if (!dataClassInfos.Contains(dataclass))
-            {
-                dataClassInfos.Add(dataclass);
-            }
-        }
-
+        //產出DataClass檔
         Dictionary<string, List<DataClass>> typeScriptClassInfo = dataClassInfos.GroupBy(o => o.ParentClassName).ToDictionary(o => o.Key, o => o.ToList());
 
         foreach (var item in typeScriptClassInfo)
@@ -232,72 +168,16 @@ public static class OACommunicate
             using (System.IO.StreamWriter file = new System.IO.StreamWriter($@"D:\GitProject\EnterpriseFrontendPlatform\webapp\src\dataclass\{item.Key}.ts", false))
             {
 
-                foreach (var objectItem in item.Value.FindAll(o => o.PropertyInfo.Type == "object" || o.PropertyInfo.Type == "object[]"))
+                foreach (var objectItem in item.Value.FindAll(o => o.PropertyInfo.Type == TSClassType.Object.Description() || o.PropertyInfo.Type == TSClassType.ObjectArray.Description()))
                 {
                     file.WriteLine($"import {{ {objectItem.PropertyInfo.Name} }} from \"./{ objectItem.PropertyInfo.Name}\";");
                 }
 
                 file.WriteLine($"export class {item.Key} " + "{");
 
-                foreach (var value in item.Value)
+                foreach (var dataClass in item.Value)
                 {
-
-                    switch (value.PropertyInfo.Type)
-                    {
-
-                        case "string":
-
-                            file.WriteLine($"{value.PropertyInfo.Name} : string = '';");
-
-                            break;
-
-                        case "string[]":
-
-                            file.WriteLine($"{value.PropertyInfo.Name} : string[] = new Array<string>();");
-
-                            break;
-
-                        case "number":
-
-                            file.WriteLine($"{value.PropertyInfo.Name} : number = 0;");
-
-                            break;
-
-                        case "number[]":
-
-                            file.WriteLine($"{value.PropertyInfo.Name} : number[] = new Array<number>();");
-
-                            break;
-
-                        case "boolean":
-
-                            file.WriteLine($"{value.PropertyInfo.Name} : boolean = false;");
-
-                            break;
-
-                        case "boolean[]":
-
-                            file.WriteLine($"{value.PropertyInfo.Name} : boolean[] = new Array<boolean>();");
-
-                            break;
-
-                        case "object":
-
-                            file.WriteLine($"{value.PropertyInfo.Name} : {value.PropertyInfo.Name} = new {value.PropertyInfo.Name}();");
-
-                            break;
-
-                        case "object[]":
-
-                            file.WriteLine($"{value.PropertyInfo.Name} : {value.PropertyInfo.Name}[] = new Array<{value.PropertyInfo.Name}>();");
-
-                            break;
-
-                        default:
-
-                            break;
-
-                    }
+                    file.WriteLine(TsPropertyInitialStringCreater(dataClass));
                 }
 
                 file.WriteLine("}");
@@ -336,7 +216,6 @@ public static class OACommunicate
             file.WriteLine("setup() {");
 
             file.WriteLine("");
-
 
             file.WriteLine($"const {mainDataClassName} = reactive(new {mainDataClassName.FirstCharToUpper()}());");
 
@@ -468,11 +347,140 @@ public static class OACommunicate
         }
 
     }
+
+    /// <summary>
+    /// 解析Class階層
+    /// </summary>
+    /// <param name="dataClassInfos"></param>
+    /// <param name="stringType"></param>
+    /// <param name="levelArray"></param>
+    private static void AnalyticalClassHierarchy(ref List<DataClass> dataClassInfos, string stringType, string[] levelArray)
+    {
+        int objectLevel = levelArray.Length;
+        while (objectLevel >= 2)
+        {
+            DataClass dataclass = new DataClass();
+
+            dataclass.PropertyInfo.Type = stringType;
+
+            dataclass.PropertyInfo.Name = levelArray[objectLevel - 1];
+
+            dataclass.ParentClassName = levelArray[objectLevel - 2].FirstCharToUpper(); ;
+
+            if (!dataClassInfos.Contains(dataclass))
+            {
+                dataClassInfos.Add(dataclass);
+            }
+
+            objectLevel -= 1;
+
+            stringType = TSClassType.Object.Description();
+        }
+    }
+
+    /// <summary>
+    /// 產生 ts dataclass 的 initial 語法
+    /// </summary>
+    /// <param name="dataClass">DataClass</param>
+    /// <returns></returns>
+    private static string TsPropertyInitialStringCreater(DataClass dataClass)
+    {
+        switch (dataClass.PropertyInfo.Type)
+        {
+            case "string":
+                return $"{dataClass.PropertyInfo.Name} : string = '';";
+            case "string[]":
+                return $"{dataClass.PropertyInfo.Name} : string[] = new Array<string>();";
+            case "number":
+                return $"{dataClass.PropertyInfo.Name} : number = 0;";
+            case "number[]":
+                return $"{dataClass.PropertyInfo.Name} : number[] = new Array<number>();";
+            case "boolean":
+                return $"{dataClass.PropertyInfo.Name} : boolean = false;";
+            case "boolean[]":
+                return $"{dataClass.PropertyInfo.Name} : boolean[] = new Array<boolean>();";
+            case "object":
+                return $"{dataClass.PropertyInfo.Name} : {dataClass.PropertyInfo.Name} = new {dataClass.PropertyInfo.Name}();";
+            case "object[]":
+                return $"{dataClass.PropertyInfo.Name} : {dataClass.PropertyInfo.Name}[] = new Array<{dataClass.PropertyInfo.Name}>();";
+            default:
+                return "";
+        }
+    }
+
+    /// <summary>
+    /// 解析HtmlNode產生DataClass資訊
+    /// </summary>
+    /// <param name="node">HtmlNode</param>
+    /// <param name="dataClassInfos">存放DataClassInfo</param>
+    /// <param name="vforItemName">vFor的item</param>
+    /// <param name="vforItemValue">item實際的值</param>
+    /// <returns></returns>
+    public static List<DataClass> AnalyticalNode(HtmlNode node, [Optional] List<DataClass> dataClassInfos, [Optional] string vforItemName, [Optional] string vforItemValue)
+    {
+        if (dataClassInfos == null)
+        {
+            dataClassInfos = new List<DataClass>();
+        }
+
+        string[] classHierarchy;
+        foreach (var item in node.ChildNodes)
+        {
+            string type = item.GetAttributeValue($"dyweb-model", "default");
+            if (item.InnerHtml.Contains("</"))
+            {
+                if (type == TSClassType.String.Description())
+                {
+                    classHierarchy = item.GetAttributeValue($"v-for", "default").Split("in").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                    GetVforItem(out vforItemName, out vforItemValue, item);
+                    AnalyticalNode(item, dataClassInfos, vforItemName, vforItemValue);
+                }
+                else
+                {
+                    AnalyticalNode(item, dataClassInfos);
+                }
+            }
+            else
+            {
+                if (item.InnerText.Contains("{{"))
+                {
+                    if (type == TSClassType.Default.Description())
+                    {
+                        type = item.GetAttributeValue($"dyweb-vfor-model", "string");
+                        if (vforItemName != null)
+                        {
+                            classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                            AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                            continue;
+                        }
+                    }
+
+                    if (type == TSClassType.ObjectArray.Description())
+                    {
+                        if (vforItemName == null)
+                        {
+                            GetVforItem(out vforItemName, out vforItemValue, item);
+                        }
+                        classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Split(".");
+                        type = item.GetAttributeValue($"dyweb-vfor--model", "string");
+                        AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                        continue;
+                    }
+
+                    classHierarchy = item.InnerText.Replace("{{", "").Replace("}}", "").Split(".");
+                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                }
+            }
+        }
+
+        return dataClassInfos;
+    }
+
+    private static void GetVforItem(out string vforItemName, out string vforItemValue, HtmlNode item)
+    {
+        vforItemName = item.GetAttributeValue($"v-for", "default").Split("in").FirstOrDefault().Trim();
+        vforItemValue = item.GetAttributeValue($"v-for", "default").Split("in").LastOrDefault().Split(".").LastOrDefault().Trim();
+    }
 }
-
-
-
-
-
-
 
