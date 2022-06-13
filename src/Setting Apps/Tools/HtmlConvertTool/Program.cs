@@ -217,7 +217,7 @@ public static class DyWebConvert
 
             file.WriteLine("");
 
-            file.WriteLine($"const {mainDataClassName} = reactive(new {mainDataClassName.FirstCharToUpper()}());");
+            file.WriteLine($"const {mainDataClassName.FirstCharTolower()} = reactive(new {mainDataClassName.FirstCharToUpper()}());");
 
             file.WriteLine("");
 
@@ -246,7 +246,7 @@ public static class DyWebConvert
             file.WriteLine("jsonstring += '\"' + paramInfo[1] + '\":\"' + paramValue + '\"';");
             file.WriteLine("} else {");
             file.WriteLine($"const key = perameters[i] as keyof {mainDataClassName.FirstCharToUpper()};");
-            file.WriteLine($"jsonstring += '\"' + perameters[i] + '\":\"' + {mainDataClassName}[key] + '\"';");
+            file.WriteLine($"jsonstring += '\"' + perameters[i] + '\":\"' + {mainDataClassName.FirstCharTolower()}[key] + '\"';");
             file.WriteLine("}}");
             file.WriteLine("jsonstring += \"} \";");
             file.WriteLine("var postData = JSON.parse(jsonstring);");
@@ -275,7 +275,7 @@ public static class DyWebConvert
             file.WriteLine("");
 
             /** returm */
-            file.WriteLine($"return {{ {mainDataClassName}, Aggr_Post }}");
+            file.WriteLine($"return {{ {mainDataClassName.FirstCharTolower()}, Aggr_Post }}");
             file.WriteLine("}");
             file.WriteLine("})");
 
