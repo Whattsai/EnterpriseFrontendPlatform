@@ -53,6 +53,7 @@ namespace Web.Actions.Aggregator.Controllers
             return Ok(result);
         }
 
+        /* 使用Grpc通訊
         [HttpGet("DaprServiceInvokeGrpc")]
         public async Task<ActionResult> DaprClientGRPCWithDIResultAsync()
         {
@@ -87,5 +88,6 @@ namespace Web.Actions.Aggregator.Controllers
             var result = await _daprClient.InvokeMethodGrpcAsync<HelloReply>("logicapi", "rule/testpubself");
             return Ok(result);
         }
+        */
     }
 }
