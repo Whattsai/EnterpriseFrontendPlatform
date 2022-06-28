@@ -6,12 +6,12 @@ networks:
 
 services:
 # Deploy other daprized services and components
-  maildev:
-    image: maildev/maildev
+  #maildev:
+  #  image: maildev/maildev
   #rabbitmq:
   #  image: rabbitmq:3-management-alpine
   redis:
-    image: redis:alpine
+    image: redis:latest
     networks:
       - efp-dapr
   #seq:
@@ -19,9 +19,9 @@ services:
   #sqldata:
   #  image: mcr.microsoft.com/mssql/server:2017-latest 
   zipkin:
-    image: openzipkin/zipkin-slim
+    image: openzipkin/zipkin
   dapr-placement:
-    image: "daprio/dapr:1.5.1"
+    image: "daprio/dapr:1.6.0"
     networks:
       - efp-dapr
 
@@ -41,7 +41,7 @@ services:
     networks:
       - efp-dapr
   web.actions.aggregator-dapr:
-    image: "daprio/daprd:1.5.1"
+    image: "daprio/daprd:1.6.0"
     network_mode: "service:web.actions.aggregator"
     depends_on:
       - web.actions.aggregator
@@ -56,7 +56,7 @@ services:
     networks:
       - efp-dapr
   rulecollections.api-dapr:
-    image: "daprio/daprd:1.5.1"
+    image: "daprio/daprd:1.6.0"
     network_mode: "service:rulecollections.api"
     depends_on:
       - rulecollections.api
