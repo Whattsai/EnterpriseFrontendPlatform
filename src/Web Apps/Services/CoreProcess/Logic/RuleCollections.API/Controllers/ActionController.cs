@@ -22,32 +22,11 @@ namespace RuleCollections.API.Controllers
 
         #region Service invocation
         [HttpGet("BuidTree")]
-        public async Task<ActionModel> BuidTree()
-        {         
-            //try
-            //{
-            //    ConditionModule _conditionModule = new ConditionModule();
-            //    Dictionary<string, ActionModel> root = new Dictionary<string, ActionModel>();
-            //    root.Add("C1", new ActionModel(
-            //        new Condition("mapperKey", _conditionModule.BuildTree(new object[] { "&", "!", "EmpID", null, "!", "Year", null })),
-            //        new ExecuteAction("GetAPI呼叫GetAnnualSalary", EnumActionType.ApiGet, "GetAnnualSalary"),
-            //        new Condition("AnnualSalaryRsponse", _conditionModule.BuildTree(new object[] { "!", "ReturnData", null }))
-            //    ));
-
-            //    return root;
-            //    //return new DaprResponse() { ResultCode = DaprResultCode.OK, DetailJsonString = JsonToken.StartObject(root) };
-            //    //var result = await _daprClient.InvokeMethodAsync<IEnumerable<WeatherForecast>>(HttpMethod.Get, "logicapi", "weatherforecast");
-            //    //return result;
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogWarning(ex.ToString());
-            //    return null;
-            //}
-
+        public async Task<Dictionary<string, ActionModel>> BuidTree()
+        {
             try
             {
-                var result = await _daprClient.InvokeMethodAsync<ActionModel>(HttpMethod.Get, "logicapi", "test");
+                var result = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>>(HttpMethod.Get, "logicapi", "test");
                 return result;
             }
             catch (Exception ex)

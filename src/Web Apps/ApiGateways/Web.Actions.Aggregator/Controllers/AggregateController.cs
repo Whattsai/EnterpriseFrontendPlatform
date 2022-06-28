@@ -22,9 +22,7 @@ namespace Web.Actions.Aggregator.Controllers
         [HttpGet("DaprServiceInvoke")]
         public async Task<ActionResult> GetDaprClientWithDIResultAsync()
         {
-            var result = await _daprClient.InvokeMethodAsync<ActionModel>(HttpMethod.Get, "logicapi", "action/buidtree");
-            //var t = JsonConvert.SerializeObject(result);
-            //ActionModel actionModel = JsonConvert.DeserializeObject<ActionModel>(t);
+            var result = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>>(HttpMethod.Get, "logicapi", "action/buidtree");
             return Ok(result);
         }
 
