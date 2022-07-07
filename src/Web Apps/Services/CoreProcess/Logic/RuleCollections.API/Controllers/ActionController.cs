@@ -3,7 +3,9 @@ using ActionEngine.Module;
 using Dapr;
 using Dapr.Client;
 using GrpcWheather;
+using HR.Model.Bounts;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace RuleCollections.API.Controllers
 {
@@ -27,6 +29,7 @@ namespace RuleCollections.API.Controllers
             try
             {
                 var result = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>>(HttpMethod.Get, "logicapi", "test");
+                await _daprClient.SaveStateAsync<Dictionary<string, ActionModel>>("statestore", "C1", result, new StateOptions() { Consistency = ConsistencyMode.Strong });
                 return result;
             }
             catch (Exception ex)
@@ -35,6 +38,34 @@ namespace RuleCollections.API.Controllers
                 return null;
             }
         }
+
+        [HttpGet("GetTree")]
+        public async Task<HelloReply> GetTree(string id)
+        {
+            var result = await _daprClient.GetStateAsync<string>("statestore", id);
+            return new HelloReply { Message = result };
+        }
+
+        [HttpGet("RunTree")]
+        public async Task<HelloReply> RunTree()
+        {
+            GetBonusRequest getBonusRequest = new GetBonusRequest(0, "19285", 2021, "TW");
+            var tree = await _daprClient.GetStateAsync<Dictionary<string, ActionModel>>("statestore", "C1");
+            //var result = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>, string> (HttpMethod.Post, "logicapi", "action/go", tree);
+
+            AggregateModule aggregateModule = new AggregateModule();
+            aggregateModule.Go(tree, getBonusRequest);
+
+            return new HelloReply { Message = JsonConvert.SerializeObject(aggregateModule.OutModel) };
+        }
+
+        //[HttpGet("Go")]
+        //public async Task<HelloReply> Go(Dictionary<string, ActionModel> actions, object request)
+        //{
+        //    ConditionModule conditionModule = new ConditionModule();
+        //    conditionModule.Go(actions);
+        //}
+
         #endregion
 
         #region State

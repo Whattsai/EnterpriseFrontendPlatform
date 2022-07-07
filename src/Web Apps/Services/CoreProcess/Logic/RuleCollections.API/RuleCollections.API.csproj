@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <ProjectReference Include="..\..\..\..\..\Lib\DaprExtentionModel\DaprExtention.csproj" />
     <ProjectReference Include="..\..\..\..\..\Lib\SJ.AggregateEngine\SJ.AggregateEngine.csproj" />
+    <ProjectReference Include="..\..\..\..\..\ref\DataClass\HR.csproj" />
 	<Protobuf Include="..\..\..\..\Protos\wheather.proto" GrpcServices="Server" />
   </ItemGroup>
 

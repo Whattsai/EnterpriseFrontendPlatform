@@ -1,6 +1,7 @@
 ﻿using ActionEngine.DataClass.Model;
 using Dapr.Client;
 using GrpcWheather;
+using HR.Model.Bounts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Actions.Aggregator.Controllers
@@ -19,17 +20,26 @@ namespace Web.Actions.Aggregator.Controllers
             _daprClient = daprClient;
         }
 
-        [HttpGet("DaprServiceInvoke")]
-        public async Task<ActionResult> GetDaprClientWithDIResultAsync()
+        [HttpGet("Buidtree")]
+        public async Task<ActionResult> Buidtree()
         {
             var result = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>>(HttpMethod.Get, "logicapi", "action/buidtree");
             return Ok(result);
         }
 
-        [HttpGet("DaprGetState")]
-        public async Task<ActionResult> GetDaprStateAsync()
+        [HttpGet("GetTree")]
+        public async Task<ActionResult> GetTree(string id)
         {
-            var result = await _daprClient.InvokeMethodAsync<HelloReply>(HttpMethod.Get, "logicapi", "rule/getstate");
+            var result = await _daprClient.InvokeMethodAsync<HelloReply>(HttpMethod.Get, "logicapi", $"action/getTree?id={id}");
+            return Ok(result);
+        }
+
+        [HttpGet("RunTree")]
+        public async Task<ActionResult> RunTree()
+        {
+            GetBonusRequest getBonusRequest = new GetBonusRequest(0, "19285", 2021, "TW");
+
+            var result = await _daprClient.InvokeMethodAsync<string>(HttpMethod.Get, "logicapi", "action/RunTree");
             return Ok(result);
         }
 
