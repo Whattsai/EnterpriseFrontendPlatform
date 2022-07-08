@@ -1,5 +1,4 @@
-﻿using ActionEngine.DataClass.Model;
-using Aggregate.Module;
+﻿using Aggregate.Module;
 using Dapr.Client;
 using GrpcWheather;
 using HR.Model.Bounts;
@@ -48,11 +47,12 @@ namespace Web.Actions.Aggregator.Controllers
         [HttpGet("Run")]
         public async Task<ActionResult> Run(string aggregateID)
         {
+            Guid? requestID = new Guid();
             var mapNextAction = await _daprClient.GetStateAsync<SortedDictionary<string, List<string>>>("statestore", aggregateID);
             GetBonusRequest getBonusRequest = new GetBonusRequest(0, "19285", 2021, "TW");
 
             // 初始化AggregateModule
-            AggregateModule aggregateModule = new AggregateModule(mapNextAction, _daprClient);
+            AggregateModule aggregateModule = new AggregateModule(mapNextAction, _daprClient, requestID);
             aggregateModule.Run();
 
             //var result = await _daprClient.InvokeMethodAsync<string>(HttpMethod.Get, "logicapi", "action/RunTree");
