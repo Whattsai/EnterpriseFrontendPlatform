@@ -1,4 +1,5 @@
 ﻿using ActionEngine.DataClass.Model;
+using Aggregate.Module;
 using Dapr.Client;
 using GrpcWheather;
 using HR.Model.Bounts;
@@ -20,27 +21,42 @@ namespace Web.Actions.Aggregator.Controllers
             _daprClient = daprClient;
         }
 
-        [HttpGet("Buidtree")]
-        public async Task<ActionResult> Buidtree()
+        [HttpGet("Build")]
+        public async Task<ActionResult> Build(string aggregateID)
         {
-            var result = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>>(HttpMethod.Get, "logicapi", "action/buidtree");
-            return Ok(result);
+            // Aggregate測試資料
+            var mapNextAction = new SortedDictionary<string, List<string>>();
+            mapNextAction.Add("A", new List<string> { "B", "D" });
+            mapNextAction.Add("B", new List<string> { });
+            mapNextAction.Add("C", new List<string> { "D" });
+            mapNextAction.Add("D", new List<string> { });
+
+            await _daprClient.SaveStateAsync("statestore", aggregateID, mapNextAction, new StateOptions() { Consistency = ConsistencyMode.Strong });
+
+
+            //var result = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>>(HttpMethod.Get, "logicapi", "action/buidtree");
+            return Ok("OK");
         }
 
         [HttpGet("GetTree")]
-        public async Task<ActionResult> GetTree(string id)
+        public async Task<ActionResult> Get(string id)
         {
             var result = await _daprClient.InvokeMethodAsync<HelloReply>(HttpMethod.Get, "logicapi", $"action/getTree?id={id}");
             return Ok(result);
         }
 
-        [HttpGet("RunTree")]
-        public async Task<ActionResult> RunTree()
+        [HttpGet("Run")]
+        public async Task<ActionResult> Run(string aggregateID)
         {
+            var mapNextAction = await _daprClient.GetStateAsync<SortedDictionary<string, List<string>>>("statestore", aggregateID);
             GetBonusRequest getBonusRequest = new GetBonusRequest(0, "19285", 2021, "TW");
 
-            var result = await _daprClient.InvokeMethodAsync<string>(HttpMethod.Get, "logicapi", "action/RunTree");
-            return Ok(result);
+            // 初始化AggregateModule
+            AggregateModule aggregateModule = new AggregateModule(mapNextAction, _daprClient);
+            aggregateModule.Run();
+
+            //var result = await _daprClient.InvokeMethodAsync<string>(HttpMethod.Get, "logicapi", "action/RunTree");
+            return Ok(aggregateModule);
         }
 
         [HttpGet("DaprPostState")]
