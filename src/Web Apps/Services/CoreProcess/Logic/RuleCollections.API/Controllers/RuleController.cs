@@ -25,7 +25,7 @@ namespace RuleCollections.API.Controllers
         {
             try
             {
-                var result = await _daprClient.InvokeMethodAsync<IEnumerable<WeatherForecast>>(HttpMethod.Get, "logicapi", "weatherforecast");
+                var result = await _daprClient.InvokeMethodAsync<IEnumerable<WeatherForecast>>(HttpMethod.Get, "logicapi", "weatherforecast?id=100");
                 return result;
             }
             catch (Exception ex)
