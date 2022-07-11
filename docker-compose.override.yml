@@ -29,13 +29,6 @@ services:
   dapr-placement:
     command: ["./placement", "-port", "50006", "-log-level", "debug"]
 
-  #dynamicwebsite:
-  #  ports:
-  #    - "8080:8080"
-  #  volumes:
-  #     - ./webapp:/app
-  #     - /app/node_modules
-
   web.actions.aggregator:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -68,3 +61,8 @@ services:
     volumes:
       - "./dapr/components/:/components"
 
+  hr.test:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "6001:80"

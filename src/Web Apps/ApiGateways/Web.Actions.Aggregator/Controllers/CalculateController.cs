@@ -58,7 +58,7 @@ namespace Web.Actions.Aggregator.Controllers
         [HttpGet("HttpClient")]
         public async Task<ActionResult> GetHttpClientResultAsync()
         {
-            var result = await _httpClient.GetAsync("https://data.tycg.gov.tw/api/v1/rest/tag?limit=20&offset=0");
+            var result = await _httpClient.GetAsync("http://host.docker.internal:6001/api/PersonalData/GetBonus?year=2020&employeeID=15235&companyCode=098");
             var resultContent = string.Format("result is {0} {1}", result.StatusCode, await result.Content.ReadAsStringAsync());
             return Ok(resultContent);
         }

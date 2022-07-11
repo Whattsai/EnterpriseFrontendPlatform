@@ -25,14 +25,7 @@ services:
     networks:
       - efp-dapr
 
-  #dynamicwebsite:
-  #  image: dynamicwebsite
-  #  build:
-  #    context: ./webapp
-  #    dockerfile: Dockerfile
-
 # Deploy self customized app daprized services
-
   web.actions.aggregator:
     image: ${DOCKER_REGISTRY-}webactionsaggregator
     build:
@@ -61,3 +54,10 @@ services:
     depends_on:
       - rulecollections.api
 
+  hr.test:
+    image: ${DOCKER_REGISTRY-}hrtest
+    build:
+      context: .
+      dockerfile: src/Web Apps/Test/HR/Dockerfile
+    networks:
+      - efp-dapr
