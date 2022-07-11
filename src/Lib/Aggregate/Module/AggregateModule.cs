@@ -1,5 +1,6 @@
 ﻿using Aggregate.Model;
 using Dapr.Actors;
+using Dapr.Actors.Client;
 using Dapr.Actors.Runtime;
 using Dapr.Client;
 using System.Collections.Concurrent;
@@ -35,7 +36,7 @@ namespace Aggregate.Module
         /// <summary>
         /// Task鎖
         /// </summary>
-        public Object thisLock { get; set; } = new Object();  
+        public Object thisLock { get; set; } = new Object();
 
         /// <summary>
         /// 服務請求資料
@@ -85,10 +86,9 @@ namespace Aggregate.Module
         /// <summary>
         /// Action執行，並回傳結果
         /// </summary>
-        public async void RunAction(string actionKey)
+        public void RunAction(string actionKey)
         {
             //var result = await _daprClient.InvokeMethodAsync<StateModel>(HttpMethod.Post, "logicapi", "action/buidtree");
-
             Dictionary<string, bool> actionIsSuccessResponse = new Dictionary<string, bool>()
             {
                 { "A", true },
@@ -96,12 +96,12 @@ namespace Aggregate.Module
                 { "C", false },
                 { "D", true },
             };
+
+            var apiResponse = new StateModel(actionIsSuccessResponse[actionKey], $"response{actionKey}");
+
             lock (thisLock)
             {
-                mapStateModel.TryAdd(actionKey, new StateModel(actionIsSuccessResponse[actionKey], $"response{actionKey}"));
-
-                //StateModel apiResponseData = new StateModel(actionIsSuccessResponse[actionKey], $"response{actionKey}");
-                //_daprClient.SaveStateAsync("statestore", $"{_requestID}_state_actionKey", apiResponseData, new StateOptions() { Consistency = ConsistencyMode.Strong });
+                mapStateModel.TryAdd(actionKey, apiResponse);
 
                 foreach (var nextNodeKey in mapNextAction[actionKey])
                 {
@@ -120,7 +120,7 @@ namespace Aggregate.Module
                         mapTask[nextNodeKey].Start();
                     }
                 }
-            }       
+            }
         }
 
         private void _computPreAction()
@@ -139,51 +139,6 @@ namespace Aggregate.Module
                 {
                     mapPreAction[nodeKey].Add(nextAction.Key);
                 }
-            }
-        }
-
-        public interface IScoreActor : IActor
-        {
-            Task<bool> RunAction(string actionKey, AggregateModule aggregateModule);
-        }
-
-        public class ScoreActor : Actor, IScoreActor
-        {
-            public ScoreActor(ActorHost host) : base(host)
-            {
-            }
-
-            public async Task<bool> RunAction(string actionKey, AggregateModule aggregateModule)
-            {
-                Dictionary<string, bool> actionIsSuccessResponse = new Dictionary<string, bool>()
-                {
-                    { "A", true },
-                    { "B", true },
-                    { "C", true },
-                    { "D", true },
-                };
-
-                aggregateModule.mapStateModel.TryAdd(actionKey, new StateModel(actionIsSuccessResponse[actionKey], $"response{actionKey}"));
-
-                foreach (var nextNodeKey in aggregateModule.mapNextAction[actionKey])
-                {
-                    bool isReadyToGo = true;
-                    foreach (var preNode in aggregateModule.mapPreAction[nextNodeKey])
-                    {
-                        if (!aggregateModule.mapStateModel.ContainsKey(preNode) || !aggregateModule.mapStateModel[preNode].IsSuccess)
-                        {
-                            isReadyToGo = false;
-                            break;
-                        }
-                    }
-
-                    if (isReadyToGo)
-                    {
-                        aggregateModule.mapTask[nextNodeKey].Start();
-                    }
-                }
-
-                return true;
             }
         }
     }
