@@ -12,10 +12,12 @@ namespace Web.Actions.Aggregator.Controllers
     public class CalculateController : ControllerBase
     {
         private readonly DaprClient _daprClient;
+        private readonly HttpClient _httpClient;
 
-        public CalculateController(DaprClient daprClient)
+        public CalculateController(DaprClient daprClient, HttpClient httpClient)
         {
             _daprClient = daprClient;
+            _httpClient = httpClient;
         }
 
         [HttpGet("DaprServiceInvoke")]
@@ -50,6 +52,26 @@ namespace Web.Actions.Aggregator.Controllers
         public async Task<ActionResult> TestPubAsync()
         {
             var result = await _daprClient.InvokeMethodAsync<WeatherForecast>(HttpMethod.Get, "logicapi", "rule/testpubself");
+            return Ok(result);
+        }
+
+        [HttpGet("HttpClient")]
+        public async Task<ActionResult> GetHttpClientResultAsync()
+        {
+            var result = await _httpClient.GetAsync("https://data.tycg.gov.tw/api/v1/rest/tag?limit=20&offset=0");
+            var resultContent = string.Format("result is {0} {1}", result.StatusCode, await result.Content.ReadAsStringAsync());
+            return Ok(resultContent);
+        }
+
+        [HttpGet("DaprBindingHttp")]
+        public async Task<ActionResult> BindingHttpAsync()
+        {
+            var metadata = new Dictionary<string, string>()
+            {
+                ["path"] = "/Rule/TestSelfCall"
+            };
+            var data = new Dictionary<string, string>(){};
+            var result = await _daprClient.InvokeBindingAsync<Dictionary<string,string>, object>("ehr_httpbinding", "get", data, metadata);
             return Ok(result);
         }
 
