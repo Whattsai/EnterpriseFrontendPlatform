@@ -1,9 +1,9 @@
-﻿using Aggregate.Model;
-using Aggregate.Module;
+﻿using Aggregate.Module;
+using Common.Model;
 using Dapr.Client;
 using GrpcWheather;
-using HR.Model.Bounts;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace Web.Actions.Aggregator.Controllers
 {
@@ -25,17 +25,12 @@ namespace Web.Actions.Aggregator.Controllers
         public async Task<ActionResult> Build(string aggregateID)
         {
             // Aggregate測試資料
-            var mapNextAction = new SortedDictionary<string, List<string>>();
-            mapNextAction.Add("A", new List<string> { "B", "D" });
-            mapNextAction.Add("B", new List<string> { });
-            mapNextAction.Add("C", new List<string> { "D" });
-            mapNextAction.Add("D", new List<string> { });
+            StreamReader r = new StreamReader($"{aggregateID}.json");
+            string jsonString = r.ReadToEnd();
+            SortedDictionary<string, List<string>> mapNextAction = JsonConvert.DeserializeObject<SortedDictionary<string, List<string>>>(jsonString)!;
 
             await _daprClient.SaveStateAsync("statestore", aggregateID, mapNextAction, new StateOptions() { Consistency = ConsistencyMode.Strong });
-
-
-            //var result = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>>(HttpMethod.Get, "logicapi", "action/buidtree");
-            return Ok("OK");
+            return Ok($"Build {aggregateID} into statestore");
         }
 
         [HttpGet("GetTree")]
@@ -45,8 +40,8 @@ namespace Web.Actions.Aggregator.Controllers
             return Ok(result);
         }
 
-        [HttpPost("Run")]
-        public async Task<ActionResult> Run(EFPRequest request)
+        [HttpPost("GO")]
+        public async Task<ActionResult> Go(EFPRequest request)
         {
             request.Token = new Guid();
             var mapNextAction = await _daprClient.GetStateAsync<SortedDictionary<string, List<string>>>("statestore", request.ID);

@@ -54,6 +54,21 @@ services:
     depends_on:
       - rulecollections.api
 
+  managementcollections.api:
+    image: ${DOCKER_REGISTRY-}managementcollectionsapi
+    build:
+      context: .
+      dockerfile: src/Web Apps/Services/CoreProcess/Logic/ManagementCollections.API/Dockerfile
+    depends_on:
+      - redis
+    networks:
+      - efp-dapr
+  managementcollections.api-dapr:
+    image: "daprio/daprd:1.6.0"
+    network_mode: "service:managementcollections.api"
+    depends_on:
+      - managementcollections.api
+
   hr.test:
     image: ${DOCKER_REGISTRY-}hrtest
     build:

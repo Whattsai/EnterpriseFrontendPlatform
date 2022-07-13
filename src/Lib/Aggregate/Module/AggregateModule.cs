@@ -1,4 +1,5 @@
 ﻿using Aggregate.Model;
+using Common.Model;
 using Dapr.Client;
 using System.Collections.Concurrent;
 
@@ -84,7 +85,7 @@ namespace Aggregate.Module
         public void GoAction(string actionKey)
         {
             var actionRequest = new EFPRequest(Request, actionKey);
-            var apiResponse = Task.Run(()=> _daprClient.InvokeMethodAsync<object, StateModel>(HttpMethod.Post, "logicapi", "action/run", actionRequest)).Result;
+            var apiResponse = Task.Run(()=> _daprClient.InvokeMethodAsync<object, StateModel>(HttpMethod.Post, "logicapi", "action/go", actionRequest)).Result;
 
             lock (thisLock)
             {

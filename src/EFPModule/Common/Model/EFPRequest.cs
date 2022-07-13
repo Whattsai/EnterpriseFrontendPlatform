@@ -1,4 +1,4 @@
-﻿namespace Aggregate.Model
+﻿namespace Common.Model
 {
     public class EFPRequest
     {
@@ -9,7 +9,7 @@
         public EFPRequest(EFPRequest request, string id)
         {
             Token = request.Token;
-            ID= id;
+            ID = id;
             Data = request.Data;
         }
 

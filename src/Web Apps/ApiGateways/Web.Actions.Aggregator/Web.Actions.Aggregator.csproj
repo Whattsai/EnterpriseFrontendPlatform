@@ -17,7 +17,6 @@
     <ProjectReference Include="..\..\..\Lib\Aggregate\Aggregate.csproj" />
     <ProjectReference Include="..\..\..\Lib\DaprExtentionModel\DaprExtention.csproj" />
     <ProjectReference Include="..\..\..\Lib\SJ.AggregateEngine\SJ.AggregateEngine.csproj" />
-    <ProjectReference Include="..\..\..\ref\DataClass\HR.csproj" />
 	<Protobuf Include="..\..\Protos\wheather.proto" GrpcServices="Client" />
   </ItemGroup>
 

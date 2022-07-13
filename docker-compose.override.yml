@@ -61,6 +61,24 @@ services:
     volumes:
       - "./dapr/components/:/components"
 
+  managementcollections.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5005:80"
+      #- "51000:51000"
+  managementcollections.api-dapr:
+    command: ["./daprd",
+      "-app-id", "managementapi",
+      "-app-port", "80",
+      #"-app-port", "51000",
+      #"-app-protocol", "grpc",
+      "-placement-host-address","placement:50006",
+      "-components-path", "/components"
+      ]
+    volumes:
+      - "./dapr/components/:/components"
+
   hr.test:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
