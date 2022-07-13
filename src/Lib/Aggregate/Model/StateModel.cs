@@ -13,7 +13,7 @@ namespace Aggregate.Model
 
         }
 
-        public StateModel(bool isSuccess, object responseData)
+        public StateModel(bool isSuccess, object? responseData)
         {
             IsSuccess = isSuccess;
             ResponseData = responseData;
@@ -32,6 +32,6 @@ namespace Aggregate.Model
         /// <summary>
         /// 回傳的物件(限定物件)
         /// </summary>
-        public object ResponseData { get; set; }
+        public object? ResponseData { get; set; }
     }
 }

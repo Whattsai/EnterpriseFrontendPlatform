@@ -1,0 +1,24 @@
+[
+    {
+        "beforeExecuteCondition": {
+            "mapFile": "xxxx.json",
+            "condition": "(EmpID != 1) & (A != @int:2)"
+        },
+        "exectionkey": "HR.GetAnnualSalary",
+        "afterExecuteCondition": {
+            "mapFile": "xxxx.json",
+            "condition": "(EmpID != 1) & (A != @int:2)"
+        }
+    },
+    {
+        "beforeExecuteCondition": {
+            "mapFile": "xxxx.json",
+            "condition": "(EmpID != 1) & (A != @int:2)"
+        },
+        "exectionkey": "HR.GetAnnualSalary",
+        "afterExecuteCondition": {
+            "mapFile": "xxxx.json",
+            "condition": "(EmpID != 1) & (A != @int:2)"
+        }
+    }
+]

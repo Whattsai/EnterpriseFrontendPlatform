@@ -1,5 +1,6 @@
 ﻿using ActionEngine.DataClass.Model;
 using ActionEngine.Module;
+using Aggregate.Model;
 using Dapr;
 using Dapr.Client;
 using GrpcWheather;
@@ -57,6 +58,23 @@ namespace RuleCollections.API.Controllers
             aggregateModule.Go(tree, getBonusRequest);
 
             return new HelloReply { Message = JsonConvert.SerializeObject(aggregateModule.OutModel) };
+        }
+
+        [HttpPost("Run")]
+        public async Task<StateModel> Run(EFPRequest request)
+        {
+            var cache = await _daprClient.GetStateAsync<Dictionary<string, ActionModel>>("statestore", "C1");
+            if(cache == null)
+            {
+                cache = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>>(HttpMethod.Get, "logicapi", "test");
+                await _daprClient.SaveStateAsync("statestore", "C1", cache, new StateOptions() { Consistency = ConsistencyMode.Strong });
+            }
+            //var result = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>, string> (HttpMethod.Post, "logicapi", "action/go", tree);
+
+            //AggregateModule aggregateModule = new AggregateModule();
+            //aggregateModule.Go(cache, request);
+
+            return new StateModel(true, request.Data);
         }
 
         //[HttpGet("Go")]
