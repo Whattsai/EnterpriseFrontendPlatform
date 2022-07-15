@@ -68,7 +68,7 @@ namespace RuleCollections.API.Controllers
             if(cache == null)
             {
                 cache = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>>(HttpMethod.Get, "logicapi", "build");
-                await _daprClient.SaveStateAsync("statestore", "C1", cache, new StateOptions() { Consistency = ConsistencyMode.Strong });
+                //await _daprClient.SaveStateAsync("statestore", "C1", cache, new StateOptions() { Consistency = ConsistencyMode.Strong });
             }
             //var result = await _daprClient.InvokeMethodAsync<Dictionary<string, ActionModel>, string> (HttpMethod.Post, "logicapi", "action/go", tree);
 

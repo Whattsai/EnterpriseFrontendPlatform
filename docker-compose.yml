@@ -58,7 +58,7 @@ services:
     image: ${DOCKER_REGISTRY-}managementcollectionsapi
     build:
       context: .
-      dockerfile: src/Web Apps/Services/CoreProcess/Logic/ManagementCollections.API/Dockerfile
+      dockerfile: src/Setting Apps/ManagementCollections.API/Dockerfile
     depends_on:
       - redis
     networks:

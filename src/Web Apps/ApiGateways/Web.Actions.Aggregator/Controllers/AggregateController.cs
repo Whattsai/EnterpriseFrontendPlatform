@@ -25,7 +25,7 @@ namespace Web.Actions.Aggregator.Controllers
         public async Task<ActionResult> Build(string aggregateID)
         {
             // Aggregate測試資料
-            StreamReader r = new StreamReader($"{aggregateID}.json");
+            StreamReader r = new StreamReader($"SettingData/{aggregateID}.json");
             string jsonString = r.ReadToEnd();
             SortedDictionary<string, List<string>> mapNextAction = JsonConvert.DeserializeObject<SortedDictionary<string, List<string>>>(jsonString)!;
 

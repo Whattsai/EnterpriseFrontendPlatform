@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\EFPModule\Common\Common.csproj" />
+    <ProjectReference Include="..\..\EFPLib\Common\Common.csproj" />
   </ItemGroup>
 
 </Project>
