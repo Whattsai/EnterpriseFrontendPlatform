@@ -61,4 +61,19 @@ namespace ActionEngine.DataClass.Model
 
         private delegate object ExctionAction(Excution map);
     }
+
+
+    /// <summary>
+    ///  原始設定JSON映射
+    /// </summary>
+    public class ActionSettingModel
+    {
+        public ActionSettingModel() { }
+
+        public ConditionSettingModel BeforeExecuteCondition { get; set; }
+
+        public string ExecuteActionID { get; set; }
+
+        public ConditionSettingModel AfterExecuteCondition { get; set; }
+    }
 }

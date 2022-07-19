@@ -75,7 +75,6 @@ namespace Aggregate.Module
                 }
             }
 
-            //Task.WaitAll(firstRun.ToArray());
             Task.WhenAll(MapTask.Values.ToArray()).Wait();
         }
 

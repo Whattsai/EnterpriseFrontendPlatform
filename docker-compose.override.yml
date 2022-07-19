@@ -43,6 +43,20 @@ services:
     volumes:
       - "./dapr/components/:/components"
 
+  action.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5006:80"
+  action.api-dapr:
+    command: ["./daprd",
+      "-app-id", "action",
+      "-app-port", "80",
+      "-components-path", "/components"
+      ]
+    volumes:
+      - "./dapr/components/:/components"
+
   rulecollections.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development

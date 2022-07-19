@@ -55,6 +55,10 @@ namespace Web.Actions.Aggregator.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// HR TEST
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("HttpClient")]
         public async Task<ActionResult> GetHttpClientResultAsync()
         {

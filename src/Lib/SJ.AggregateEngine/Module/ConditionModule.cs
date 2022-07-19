@@ -107,6 +107,13 @@ namespace ActionEngine.Module
             return node;
         }
 
+        public TreeNode? BuildTree(string functionString)
+        {
+            TreeNode node = new TreeNode(functionString[0]);
+
+            return node;
+        }
+
         private object? getData(object obj, Dictionary<string, object> model)
         {
             switch (obj?.GetType().Name)

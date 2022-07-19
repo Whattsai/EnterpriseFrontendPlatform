@@ -39,6 +39,19 @@ services:
     depends_on:
       - web.actions.aggregator
 
+  actions.api:
+    image: ${DOCKER_REGISTRY-}actionsapi
+    build:
+      context: .
+      dockerfile: src/Web Apps/Services/Action.API/Dockerfile
+    networks:
+      - efp-dapr
+  actions.api-dapr:
+    image: "daprio/daprd:1.6.0"
+    network_mode: "service:actions.api"
+    depends_on:
+      - actions.api
+
   rulecollections.api:
     image: ${DOCKER_REGISTRY-}rulecollectionsapi
     build:

@@ -1,0 +1,5 @@
+{
+  "Name": "GetAPI呼叫GetAnnualSalary", //顯示字樣
+  "ActionType": 11, //ApiGet
+  "Key": "GetAnnualSalary" //要呼叫的API
+}

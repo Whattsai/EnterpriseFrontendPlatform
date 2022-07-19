@@ -33,4 +33,12 @@ namespace ActionEngine.DataClass.Model
         /// </summary>
         public Dictionary<string, object> OutModel { get; set; }
     }
+
+
+    public class ConditionSettingModel
+    {
+        public string MapperKey { get; set; }
+
+        public string ConditionSetting { get; set; }
+    }
 }

@@ -47,7 +47,7 @@ namespace RuleCollections.API.Controllers
         [HttpPost("PostState")]
         public async Task<HelloReply> PostStateAsync()
         {
-            await _daprClient.SaveStateAsync<string>("statestore", "guid", Guid.NewGuid().ToString(), new StateOptions() { Consistency = ConsistencyMode.Strong });
+            await _daprClient.SaveStateAsync("statestore", "guid", Guid.NewGuid().ToString(), new StateOptions() { Consistency = ConsistencyMode.Strong });
             return new HelloReply { Message = "done" };
         }
 
@@ -76,31 +76,31 @@ namespace RuleCollections.API.Controllers
 
         #region PubSub
 
-        [HttpGet("TestPubSelf")]
-        public async Task<WeatherForecast> TestPubSelfAsync()
-        {
-            var data = new WeatherForecast
-            {
-                Summary = "都沒你的甜兒",
-                TemperatureC = 50,
-                Date = DateTime.Now
-            };
+        //[HttpGet("TestPubSelf")]
+        //public async Task<WeatherForecast> TestPubSelfAsync()
+        //{
+        //    var data = new WeatherForecast
+        //    {
+        //        Summary = "都沒你的甜兒",
+        //        TemperatureC = 50,
+        //        Date = DateTime.Now
+        //    };
 
-            _logger.LogInformation("start publish");
-            await _daprClient.PublishEventAsync("pubsub", "rule", data);
-            _logger.LogInformation("end publish");
-            return data;
-        }
+        //    _logger.LogInformation("start publish");
+        //    await _daprClient.PublishEventAsync("pubsub", "rule", data);
+        //    _logger.LogInformation("end publish");
+        //    return data;
+        //}
 
-        [Topic("pubsub", "rule")]
-        [HttpPost("TestSubSelf")]
-        public async Task<ActionResult> TestSubSelfAsync(WeatherForecast data, [FromServices] DaprClient daprClient)
-        {
-            _logger.LogInformation("success into sub!");
-            _logger.LogInformation($"start sub：{JsonSerializer.Serialize(data)}");
-            _logger.LogInformation("end!");
-            return Ok("done");
-        }
+        //[Topic("pubsub", "rule")]
+        //[HttpPost("TestSubSelf")]
+        //public async Task<ActionResult> TestSubSelfAsync(WeatherForecast data, [FromServices] DaprClient daprClient)
+        //{
+        //    _logger.LogInformation("success into sub!");
+        //    _logger.LogInformation($"start sub：{JsonSerializer.Serialize(data)}");
+        //    _logger.LogInformation("end!");
+        //    return Ok("done");
+        //}
         #endregion
     }
 }

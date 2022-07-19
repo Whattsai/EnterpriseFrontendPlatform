@@ -20,7 +20,7 @@
     <ProjectReference Include="..\..\..\..\..\EFPLib\HR\HR.csproj" />
     <ProjectReference Include="..\..\..\..\..\Lib\Aggregate\Aggregate.csproj" />
     <ProjectReference Include="..\..\..\..\..\Lib\DaprExtentionModel\DaprExtention.csproj" />
-    <ProjectReference Include="..\..\..\..\..\Lib\SJ.AggregateEngine\SJ.AggregateEngine.csproj" />
+    <ProjectReference Include="..\..\..\..\..\Lib\SJ.AggregateEngine\SJ.ActionEngine.csproj" />
 	<Protobuf Include="..\..\..\..\Protos\wheather.proto" GrpcServices="Server" />
   </ItemGroup>
 
