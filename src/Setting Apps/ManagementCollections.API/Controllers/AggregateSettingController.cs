@@ -21,7 +21,7 @@ namespace ManagementCollections.API.Controllers
         public async Task<SortedDictionary<string, List<string>>> Build(string aggregateID)
         {
             // Aggregate´ú¸Õ¸ê®Æ
-            StreamReader r = new StreamReader($"SettingData/AggregateSetting/{aggregateID}.json");
+            StreamReader r = new StreamReader($"SettingData/Aggregate/{aggregateID}.json");
             string jsonString = r.ReadToEnd();
             SortedDictionary<string, List<string>> mapNextAction = JsonConvert.DeserializeObject<SortedDictionary<string, List<string>>>(jsonString)!;
 

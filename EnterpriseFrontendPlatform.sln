@@ -69,7 +69,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Execution", "Execution", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{F58531BF-EF14-4F2B-BF11-710AB889B2D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpClient", "src\Web Apps\Services\Execution\External\HttpClient\HttpClient.csproj", "{5888D44F-8943-41E7-BB0E-7C440367269D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpClientAPI", "src\Web Apps\Services\Execution\External\HttpClient\HttpClientAPI.csproj", "{5888D44F-8943-41E7-BB0E-7C440367269D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logic", "Logic", "{CDC4E244-1052-43C4-9199-FF7A69CAD0E8}"
 EndProject

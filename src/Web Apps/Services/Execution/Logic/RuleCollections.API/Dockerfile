@@ -6,10 +6,17 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["src/Web Apps/Services/CoreProcess/Logic/RuleCollections.API/RuleCollections.API.csproj", "src/Web Apps/Services/CoreProcess/Logic/RuleCollections.API/"]
-RUN dotnet restore "src/Web Apps/Services/CoreProcess/Logic/RuleCollections.API/RuleCollections.API.csproj"
+COPY ["src/Web Apps/Services/Execution/Logic/RuleCollections.API/RuleCollections.API.csproj", "src/Web Apps/Services/Execution/Logic/RuleCollections.API/"]
+COPY ["src/EFPLib/HR/HR.csproj", "src/EFPLib/HR/"]
+COPY ["src/Lib/SJ.AggregateEngine/SJ.ActionEngine.csproj", "src/Lib/SJ.AggregateEngine/"]
+COPY ["src/Lib/ObjectMapper/SJ.ObjectMapper.csproj", "src/Lib/ObjectMapper/"]
+COPY ["src/Lib/SJConvert/SJ.Convert.csproj", "src/Lib/SJConvert/"]
+COPY ["src/EFPLib/Common/Common.csproj", "src/EFPLib/Common/"]
+COPY ["src/Lib/Aggregate/Aggregate.csproj", "src/Lib/Aggregate/"]
+COPY ["src/Lib/DaprExtentionModel/DaprExtention.csproj", "src/Lib/DaprExtentionModel/"]
+RUN dotnet restore "src/Web Apps/Services/Execution/Logic/RuleCollections.API/RuleCollections.API.csproj"
 COPY . .
-WORKDIR "/src/src/Web Apps/Services/CoreProcess/Logic/RuleCollections.API"
+WORKDIR "/src/src/Web Apps/Services/Execution/Logic/RuleCollections.API"
 RUN dotnet build "RuleCollections.API.csproj" -c Release -o /app/build
 
 FROM build AS publish

@@ -39,6 +39,6 @@ namespace ActionEngine.DataClass.Model
     {
         public string MapperKey { get; set; }
 
-        public string ConditionSetting { get; set; }
+        public IList<object> ConditionSetting { get; set; }
     }
 }

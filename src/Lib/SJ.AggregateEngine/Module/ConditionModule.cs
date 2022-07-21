@@ -55,11 +55,13 @@ namespace ActionEngine.Module
             return converType(left).Equals(converType(right));
         }
 
+
+        // TODO 【OperandMethod】 C#中object的String與JSONConvert轉換回來的String型態不太依樣，故先用ToString的方法來轉型
         public bool Go(TreeNode? root, Dictionary<string, object> leftModel, Dictionary<string, object> rightModel)
         {
             if (root.left.left == null && root.right.right == null)
             {
-                return new OperandMethod(IOperands[root.val]).Invoke(
+                return new OperandMethod(IOperands[root.val.ToString()!]).Invoke(
                     getData(root.left.val, leftModel),
                     getData(root.right.val, rightModel)
                 );
@@ -67,7 +69,7 @@ namespace ActionEngine.Module
 
             if (root.left.left == null)
             {
-                return new OperandMethod(IOperands[root.val]).Invoke(
+                return new OperandMethod(IOperands[root.val.ToString()!]).Invoke(
                     getData(root.left.val, leftModel),
                     getData(Go(root.right, leftModel, rightModel), rightModel)
                     );
@@ -75,13 +77,13 @@ namespace ActionEngine.Module
 
             if (root.right.right == null)
             {
-                return new OperandMethod(IOperands[root.val]).Invoke(
+                return new OperandMethod(IOperands[root.val.ToString()!]).Invoke(
                     getData(Go(root.left, leftModel, rightModel), leftModel),
                     getData(root.right.val, rightModel)
                     );
             }
 
-            return new OperandMethod(IOperands[root.val]).Invoke(Go(root.left, leftModel, rightModel), Go(root.right, leftModel, rightModel));
+            return new OperandMethod(IOperands[root.val.ToString()!]).Invoke(Go(root.left, leftModel, rightModel), Go(root.right, leftModel, rightModel));
         }
 
         /// <summary>
@@ -89,7 +91,7 @@ namespace ActionEngine.Module
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
-        public TreeNode? BuildTree(object[] condition, bool start = true)
+        public TreeNode? BuildTree(IList<object> condition, bool start = true)
         {
             if (start)
             {

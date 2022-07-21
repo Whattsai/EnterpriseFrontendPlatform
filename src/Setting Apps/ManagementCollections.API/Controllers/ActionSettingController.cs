@@ -25,7 +25,7 @@ namespace ManagementCollections.API.Controllers
         public async Task<List<ActionModel>> Build(string actionID)
         {
             // Action´ú¸Õ¸ê®Æ
-            StreamReader r = new StreamReader($"SettingData/ActionSetting/{actionID}.json");
+            StreamReader r = new StreamReader($"SettingData/Action/{actionID}.json");
             string jsonString = r.ReadToEnd();
             List<ActionSettingModel> actionSetting = JsonConvert.DeserializeObject<List<ActionSettingModel>>(jsonString)!;
 
@@ -34,9 +34,9 @@ namespace ManagementCollections.API.Controllers
             List<ActionModel> actions = new List<ActionModel>();
             foreach (var item in actionSetting)
             {
-                StreamReader r2 = new StreamReader($"SettingData/ExecutionSetting/{item.ExecuteActionID}.json");
-                jsonString = r.ReadToEnd();
-                var execution = JsonConvert.DeserializeObject<ExecuteAction>(jsonString)!;
+                StreamReader r2 = new StreamReader($"SettingData/Execution/{item.ExecuteActionID}.json");
+                var jsonString2 = r2.ReadToEnd();
+                var execution = JsonConvert.DeserializeObject<ExecuteAction>(jsonString2)!;
 
                 actions.Add(new ActionModel(
                     new Condition(item.BeforeExecuteCondition.MapperKey, _conditionModule.BuildTree(item.BeforeExecuteCondition.ConditionSetting)),

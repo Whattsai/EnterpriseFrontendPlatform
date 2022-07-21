@@ -6,12 +6,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>425e1853-e224-49b7-8cfa-2532ebfae691</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>..\..\..\..\..\..\..</DockerfileContext>
+    <DockerfileContext>..\..\..\..\..\..</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Dapr.AspNetCore" Version="1.8.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\EFPLib\Common\Common.csproj" />
+    <ProjectReference Include="..\..\..\..\..\Lib\SJConvert\SJ.Convert.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,10 @@
 ﻿using ActionEngine.DataClass.Model;
+using ActionEngine.Module;
 using Aggregate.Model;
 using Common.Model;
 using Dapr.Client;
 using Microsoft.AspNetCore.Mvc;
+using SJ.Convert;
 
 namespace Action.API.Controllers
 {
@@ -23,13 +25,27 @@ namespace Action.API.Controllers
         [HttpPost("Go")]
         public async Task<StateModel> Go(EFPRequest request)
         {
-            var cache = await _daprClient.GetStateAsync<List<ActionModel>>("statestore", request.ID);
-            if (cache == null)
+            var actions = await _daprClient.GetStateAsync<List<ActionModel>>("statestore", request.ID);
+            if (actions == null)
             {
-                cache = await _daprClient.InvokeMethodAsync<List<ActionModel>>(HttpMethod.Get, "managementapi", "build");
+                actions = await _daprClient.InvokeMethodAsync<List<ActionModel>>(HttpMethod.Get, "managementapi", $"actionsetting/build?actionID={request.ID}");
+            }
+
+            ActionModule actionModule = new ActionModule(_daprClient);
+
+            foreach (var action in actions)
+            {
+                request.Data = actionModule.Go(action, request.Data);
             }
 
             return new StateModel(true, request.Data);
+        }
+
+        [HttpPost("Test")]
+        public async Task<StateModel> Test(string id)
+        {
+
+            return new StateModel(true, id);
         }
     }
 }

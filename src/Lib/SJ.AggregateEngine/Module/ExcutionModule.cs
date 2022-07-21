@@ -1,4 +1,5 @@
 ﻿using ActionEngine.DataClass.Model;
+using Dapr.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,14 @@ namespace ActionEngine.Module
 {
     public class ExcutionModule
     {
-        public ExcutionModule()
+        private readonly DaprClient _daprClient;
+
+        public ExcutionModule(DaprClient daprClient)
         {
+            _daprClient = daprClient;
             IExection = new Dictionary<EnumActionType, ExectionMethod>()
             {
-                {EnumActionType.ApiGet, new ExectionMethod(new API().ApiGet) }
+                {EnumActionType.ApiGet, new ExectionMethod(new API(_daprClient).ApiGet) }
             };
         }
 

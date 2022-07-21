@@ -57,6 +57,20 @@ services:
     volumes:
       - "./dapr/components/:/components"
 
+  httpclient.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5007:80"
+  httpclient.api-dapr:
+    command: ["./daprd",
+      "-app-id", "httpclient",
+      "-app-port", "80",
+      "-components-path", "/components"
+      ]
+    volumes:
+      - "./dapr/components/:/components"
+
   rulecollections.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development

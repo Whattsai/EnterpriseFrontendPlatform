@@ -84,7 +84,7 @@ namespace Aggregate.Module
         public void GoAction(string actionKey)
         {
             var actionRequest = new EFPRequest(Request, actionKey);
-            var apiResponse = Task.Run(()=> _daprClient.InvokeMethodAsync<object, StateModel>(HttpMethod.Post, "logicapi", "action/go", actionRequest)).Result;
+            var apiResponse = Task.Run(()=> _daprClient.InvokeMethodAsync<EFPRequest, StateModel>(HttpMethod.Post, "action", "action/go", actionRequest)).Result;
 
             lock (thisLock)
             {

@@ -1,0 +1,13 @@
+[
+  {
+    "BeforeExecuteCondition": {
+      "MapperKey": null,
+      "ConditionSetting": [ "&", "!", "EmpID", null, "!", "Year", 2024 ]
+    },
+    "ExecuteActionID": "Execution_HR.GetAnnualSalary",
+    "AfterExecuteCondition": {
+      "MapperKey": "AnnualSalaryRsponse",
+      "ConditionSetting": [ "!", "ReturnData", null ]
+    }
+  }
+]

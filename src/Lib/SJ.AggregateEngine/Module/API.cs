@@ -1,18 +1,29 @@
 ﻿using ActionEngine.DataClass.Model;
+using Common.Model;
+using Dapr.Client;
+using SJ.Convert;
 
 namespace ActionEngine.Module
 {
     internal class API
     {
-        public API()
+        private readonly DaprClient _daprClient;
+
+        public API(DaprClient daprClient)
         {
+            _daprClient = daprClient;
         }
 
-        internal Dictionary<string, object> ApiGet(ExecuteAction action, Dictionary<string, object> inModel)
+        public Dictionary<string, object> ApiGet(ExecuteAction action, Dictionary<string, object> inModel)
         {
-            StreamReader r = new StreamReader($"SettingData/ExternalAPI/{action.Key}.json");
-            string jsonString = r.ReadToEnd();
-            return SJ.Convert.JsonTrans.ToModelOrDefault<Dictionary<string, object>>(jsonString)?? new Dictionary<string, object>();
+            EFPRequest request = new EFPRequest()
+            {
+                ID = action.Key,
+                Data = inModel
+            };
+            var result = Task.Run(() => _daprClient.InvokeMethodAsync<EFPRequest, object>(HttpMethod.Post, "httpclient", "api/apiget" ,request)).Result;
+
+            return DictionaryEx.ToDictionary<object>(result);
         }
     }
 }

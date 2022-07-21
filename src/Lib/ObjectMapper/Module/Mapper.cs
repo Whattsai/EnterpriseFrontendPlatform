@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using SJ.Convert;
+﻿using SJ.Convert;
 using SJ.ObjectMapper.DataClass;
+using System.Text.Json;
 using static SJ.ObjectMapper.DataClass.Enum;
 
 namespace SJ.ObjectMapper.Module
@@ -49,7 +49,7 @@ namespace SJ.ObjectMapper.Module
             var treeMap = JsonTrans.ToModelOrDefault<Dictionary<string, dynamic>>(jsonString);
             _inModel = inModel;
 
-            var jsonModelT = JsonConvert.SerializeObject(treeRecursion(treeMap, DictionaryEx.ToDictionary<object>(outModel)));
+            var jsonModelT = JsonSerializer.Serialize(treeRecursion(treeMap, DictionaryEx.ToDictionary<object>(outModel)));
             return JsonTrans.ToModelOrDefault<T>(jsonModelT);
         }
 
@@ -225,6 +225,11 @@ namespace SJ.ObjectMapper.Module
                 var hierarchyList = stringHierarchy.Split('.');
                 foreach (var h in hierarchyList)
                 {
+                    if (inModelData == null)
+                    {
+                        return null;
+                    }
+
                     var imModelDict = DictionaryEx.ToDictionary<object>(inModelData);
 
                     if (!imModelDict.ContainsKey(h))
@@ -234,17 +239,18 @@ namespace SJ.ObjectMapper.Module
 
                     inModelData = imModelDict[h];
 
-                    if (inModelData == null)
-                    {
-                        return inModelData;
-                    }
+                    // TODO 遇到裡面是Array不知道怎麼處理拉，直接通通丟回去
+                    //if (inModelData.GetType().Name == "JArray")
+                    //{
+                    //    return inModelData;
+                    //}
                 }
             }
             else if (stringHierarchy == string.Empty)
             {
                 if (_inModel.GetType().Name == "JArray")
                 {
-                    return JsonConvert.DeserializeObject<List<dynamic>>(JsonConvert.SerializeObject(_inModel));
+                    return JsonSerializer.Deserialize<List<dynamic>>(JsonSerializer.Serialize(_inModel));
                 }
 
                 return inModelData;
