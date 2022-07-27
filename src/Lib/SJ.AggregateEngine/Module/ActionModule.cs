@@ -6,7 +6,7 @@ using SJ.ObjectMapper.Module;
 
 namespace ActionEngine.Module
 {
-    public class ActionModule : IActionModule<Dictionary<string, object>, Dictionary<string, object>>
+    public class ActionModule : IActionModule<object, Dictionary<string, object>>
     {
         public readonly DaprClient _daprClient;
 
@@ -26,35 +26,36 @@ namespace ActionEngine.Module
             condition.IsOK = conditionModule.Go(condition.ConditionTree, condition.OutModel, condition.OutModel);
         }
 
-        public Dictionary<string, object> ExecuteAction(ExecuteAction action, Dictionary<string, object> inModel)
+        public object ExecuteAction(ExecuteAction action, Dictionary<string, object> inModel)
         {
             return new ExcutionModule(_daprClient).Go(action, inModel);
         }
 
-        public void AfterExecuteCondition(Condition condition, Dictionary<string, object> request)
+        public void AfterExecuteCondition(Condition condition, object request)
         {
+            Dictionary<string, object> dict = DictionaryEx.ToDictionary<object>(request);
+
             // 判斷請求參數是否正確
-            condition.IsOK = conditionModule.Go(condition.ConditionTree, request, request);
+            condition.IsOK = conditionModule.Go(condition.ConditionTree, dict, dict);
 
             // TODO 尚須處理 request mapping
             StreamReader r = new StreamReader($"SettingData/Mapper/{condition.MapperKey}.json");
             string jsonString = r.ReadToEnd();
-            condition.OutModel = new Mapper().GetTreeMapResult<Dictionary<string, object>>(jsonString, request, new Dictionary<string, object>());
+            condition.OutModel = new Mapper().GetTreeMapResult(jsonString, request, new Dictionary<string, object>());
 
             //condition.OutModel = request;
         }
 
-        public object Go(ActionModel action, object request)
+        public Dictionary<string, object> Go(ActionModel action, Dictionary<string, object> request)
         {
-            var dictionaryData = DictionaryEx.ToDictionary<object>(request)!;
             // 如beforeCondition未通過，跳過
-            BeforeExecuteCondition(action.BeforeExecuteCondition, dictionaryData);
+            BeforeExecuteCondition(action.BeforeExecuteCondition, request);
 
             // bool? 執行成功: true, 失敗: false, 未執行: null
             if (action.BeforeExecuteCondition.IsOK == true)
             {
                 // 執行action
-                AfterExecuteCondition(action.AfterExecuteCondition, ExecuteAction(action.ExecuteAction, dictionaryData));
+                AfterExecuteCondition(action.AfterExecuteCondition, ExecuteAction(action.ExecuteAction, request));
                 return action.AfterExecuteCondition.OutModel;
             }
 

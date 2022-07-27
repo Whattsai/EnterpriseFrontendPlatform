@@ -1,6 +1,6 @@
-﻿using SJ.Convert;
+﻿using Newtonsoft.Json;
+using SJ.Convert;
 using SJ.ObjectMapper.DataClass;
-using System.Text.Json;
 using static SJ.ObjectMapper.DataClass.Enum;
 
 namespace SJ.ObjectMapper.Module
@@ -44,13 +44,12 @@ namespace SJ.ObjectMapper.Module
         /// <param name="inModel">要被轉換的物件</param>
         /// <param name="outModel">outModel原始資料</param>
         /// <returns>T</returns>
-        public T GetTreeMapResult<T>(string jsonString, object inModel, object outModel)
+        public Dictionary<string, object> GetTreeMapResult(string jsonString, dynamic inModel, Dictionary<string, object> outModel)
         {
             var treeMap = JsonTrans.ToModelOrDefault<Dictionary<string, dynamic>>(jsonString);
             _inModel = inModel;
 
-            var jsonModelT = JsonSerializer.Serialize(treeRecursion(treeMap, DictionaryEx.ToDictionary<object>(outModel)));
-            return JsonTrans.ToModelOrDefault<T>(jsonModelT);
+            return treeRecursion(treeMap, DictionaryEx.ToDictionary<object>(outModel));
         }
 
         /// <summary>
@@ -230,7 +229,7 @@ namespace SJ.ObjectMapper.Module
                         return null;
                     }
 
-                    var imModelDict = DictionaryEx.ToDictionary<object>(inModelData);
+                    var imModelDict = inModelData;
 
                     if (!imModelDict.ContainsKey(h))
                     {
@@ -250,7 +249,7 @@ namespace SJ.ObjectMapper.Module
             {
                 if (_inModel.GetType().Name == "JArray")
                 {
-                    return JsonSerializer.Deserialize<List<dynamic>>(JsonSerializer.Serialize(_inModel));
+                    return JsonConvert.DeserializeObject<List<dynamic>>(JsonConvert.SerializeObject(_inModel));
                 }
 
                 return inModelData;

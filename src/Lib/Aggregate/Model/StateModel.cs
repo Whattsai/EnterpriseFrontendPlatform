@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,11 +19,6 @@ namespace Aggregate.Model
             IsSuccess = isSuccess;
             ResponseData = responseData;
         }
-
-        /// <summary>
-        /// 顯示名稱
-        /// </summary>
-        public string Name { get; set; }
 
         /// <summary>
         /// 是否成功

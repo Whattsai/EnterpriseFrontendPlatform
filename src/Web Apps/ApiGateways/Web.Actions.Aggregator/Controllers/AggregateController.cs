@@ -4,6 +4,8 @@ using Dapr.Client;
 using GrpcWheather;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using SJ.Convert;
+using SJ.ObjectMapper.Module;
 
 namespace Web.Actions.Aggregator.Controllers
 {
@@ -39,7 +41,19 @@ namespace Web.Actions.Aggregator.Controllers
             AggregateModule aggregateModule = new AggregateModule(mapNextAction, _daprClient, request);
             Task.Run(() => aggregateModule.Go()).Wait();
 
-            return Ok(aggregateModule);
+            // 整理response
+            StreamReader r = new StreamReader($"SettingData/Mapper/{request.ID}.json");
+            string jsonString = r.ReadToEnd();
+
+            Dictionary<string, object> inmodel = new Dictionary<string, object>();
+            foreach(var item in aggregateModule.MapStateModel)
+            {
+                inmodel.Add(item.Key, item.Value);
+            }
+
+            //var response = new Mapper().GetTreeMapResult(jsonString, inmodel, new Dictionary<string, object>());
+
+            return Ok(aggregateModule.MapStateModel);
         }
     }
 }

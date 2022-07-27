@@ -5,6 +5,8 @@ using Common.Model;
 using Dapr.Client;
 using Microsoft.AspNetCore.Mvc;
 using SJ.Convert;
+using System.Text;
+using System.Text.Json;
 
 namespace Action.API.Controllers
 {
@@ -23,22 +25,25 @@ namespace Action.API.Controllers
         }
 
         [HttpPost("Go")]
-        public async Task<StateModel> Go(EFPRequest request)
+        public ActionResult Go(EFPRequest request)
         {
-            var actions = await _daprClient.GetStateAsync<List<ActionModel>>("statestore", request.ID);
+            var actions = Task.Run(()=> _daprClient.GetStateAsync<List<ActionModel>>("statestore", request.ID)).Result;
             if (actions == null)
             {
-                actions = await _daprClient.InvokeMethodAsync<List<ActionModel>>(HttpMethod.Get, "managementapi", $"actionsetting/build?actionID={request.ID}");
+                actions = Task.Run(()=> _daprClient.InvokeMethodAsync<List<ActionModel>>(HttpMethod.Get, "managementapi", $"actionsetting/build?actionID={request.ID}")).Result ;
             }
 
             ActionModule actionModule = new ActionModule(_daprClient);
 
+            Dictionary<string, object> tmp = DictionaryEx.ToDictionary<object>(request.Data);
+
             foreach (var action in actions)
             {
-                request.Data = actionModule.Go(action, request.Data);
+                tmp = actionModule.Go(action, tmp);
             }
 
-            return new StateModel(true, request.Data);
+            return  Content(JsonSerializer.Serialize(new StateModel(true, tmp["Data"])), "application/json", Encoding.UTF8);
+            //return Ok(new StateModel(true, tmp["Data"]));
         }
 
         [HttpPost("Test")]

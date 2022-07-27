@@ -23,10 +23,10 @@ namespace ActionEngine.Module
 
         private Dictionary<EnumActionType, ExectionMethod> IExection;
 
-        private delegate Dictionary<string, object> ExectionMethod(ExecuteAction action, Dictionary<string, object> inModel);
+        private delegate object ExectionMethod(ExecuteAction action, object inModel);
 
 
-        public Dictionary<string, object> Go(ExecuteAction action, Dictionary<string, object> inModel)
+        public object Go(ExecuteAction action, object inModel)
         {
             return new ExectionMethod(IExection[action.ActionType]).Invoke(action, inModel);
         }

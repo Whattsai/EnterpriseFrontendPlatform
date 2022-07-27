@@ -1,0 +1,5 @@
+{
+  "URL": "http://host.docker.internal:6001/api/PersonalData/GetAnnualSalary?year={Year}&employeeID={EmpID}",
+  "Header": "",
+  "Body": ""
+}

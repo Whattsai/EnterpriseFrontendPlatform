@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json;
+
 namespace SJ.Convert
 {
     /// <summary>
@@ -21,8 +23,8 @@ namespace SJ.Convert
         /// <returns>Dictionary</returns>
         public static Dictionary<string, TValue> ToDictionary<TValue>(object obj)
         {
-            var json = JsonSerializer.Serialize(obj);
-            var dictionary = JsonSerializer.Deserialize<Dictionary<string, TValue>>(json);
+            var json = JsonConvert.SerializeObject(obj);
+            var dictionary = JsonConvert.DeserializeObject<Dictionary<string, TValue>>(json);
             return dictionary ?? new Dictionary<string, TValue>();
         }
 

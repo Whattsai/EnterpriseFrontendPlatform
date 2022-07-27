@@ -1,6 +1,7 @@
 ﻿using Aggregate.Model;
 using Common.Model;
 using Dapr.Client;
+using Newtonsoft.Json;
 using System.Collections.Concurrent;
 
 namespace Aggregate.Module

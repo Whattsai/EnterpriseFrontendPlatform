@@ -14,6 +14,6 @@ namespace ActionEngine.DataClass.Interface
 
         OutT ExecuteAction(ExecuteAction action, InT inModel);
 
-        void AfterExecuteCondition(Condition condition, Dictionary<string, object> request);
+        void AfterExecuteCondition(Condition condition, object request);
     }
 }

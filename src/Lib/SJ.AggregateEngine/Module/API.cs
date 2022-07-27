@@ -14,16 +14,16 @@ namespace ActionEngine.Module
             _daprClient = daprClient;
         }
 
-        public Dictionary<string, object> ApiGet(ExecuteAction action, Dictionary<string, object> inModel)
+        public Dictionary<string, object> ApiGet(ExecuteAction action, object inModel)
         {
             EFPRequest request = new EFPRequest()
             {
                 ID = action.Key,
                 Data = inModel
             };
-            var result = Task.Run(() => _daprClient.InvokeMethodAsync<EFPRequest, object>(HttpMethod.Post, "httpclient", "api/apiget" ,request)).Result;
+            var result = Task.Run(() => _daprClient.InvokeMethodAsync<EFPRequest, Dictionary<string, object>>(HttpMethod.Post, "httpclient", "api/apiget" ,request)).Result;
 
-            return DictionaryEx.ToDictionary<object>(result);
+            return result;
         }
     }
 }
