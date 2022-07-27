@@ -22,9 +22,10 @@ builder.Services.AddControllers()
         // ¨ú®øUnicode½s½X
         options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
 
-        //options.JsonSerializerOptions.ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip;
-        //options.JsonSerializerOptions.MaxDepth = 10;
-        //options.JsonSerializerOptions.UnknownTypeHandling = System.Text.Json.Serialization.JsonUnknownTypeHandling.JsonNode;
+        options.JsonSerializerOptions.ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip;
+        options.JsonSerializerOptions.MaxDepth = 10;
+        options.JsonSerializerOptions.UnknownTypeHandling = System.Text.Json.Serialization.JsonUnknownTypeHandling.JsonNode;
+        //options.JsonSerializerOptions.WriteIndented 
     });
     //.AddNewtonsoftJson(options =>
     //{

@@ -21,6 +21,10 @@ builder.Services.AddControllers().AddJsonOptions(
         options.JsonSerializerOptions.AllowTrailingCommas = true;
         // ¨ú®øUnicode½s½X
         options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+
+        options.JsonSerializerOptions.ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip;
+        options.JsonSerializerOptions.MaxDepth = 10;
+        options.JsonSerializerOptions.UnknownTypeHandling = System.Text.Json.Serialization.JsonUnknownTypeHandling.JsonNode;
     });
 builder.Services.AddDaprClient();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
