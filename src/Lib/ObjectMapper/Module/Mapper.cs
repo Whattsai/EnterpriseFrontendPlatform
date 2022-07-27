@@ -49,7 +49,7 @@ namespace SJ.ObjectMapper.Module
             var treeMap = JsonTrans.ToModelOrDefault<Dictionary<string, dynamic>>(jsonString);
             _inModel = inModel;
 
-            return treeRecursion(treeMap, DictionaryEx.ToDictionary<object>(outModel));
+            return treeRecursion(treeMap, outModel);
         }
 
         /// <summary>
@@ -229,7 +229,16 @@ namespace SJ.ObjectMapper.Module
                         return null;
                     }
 
-                    var imModelDict = inModelData;
+                    Dictionary<string, object> imModelDict = new Dictionary<string, object>();
+                    var aaaa = inModelData.GetType().Name;
+                    if (inModelData.GetType().Name != "Dictionary`2")
+                    {
+                        imModelDict = DictionaryEx.ToDictionary<object>(inModelData);
+                    }
+                    else
+                    {
+                        imModelDict = inModelData;
+                    }
 
                     if (!imModelDict.ContainsKey(h))
                     {

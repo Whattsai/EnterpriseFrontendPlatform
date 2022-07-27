@@ -1,10 +1,7 @@
 ﻿using Aggregate.Module;
 using Common.Model;
 using Dapr.Client;
-using GrpcWheather;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using SJ.Convert;
 using SJ.ObjectMapper.Module;
 
 namespace Web.Actions.Aggregator.Controllers
@@ -46,14 +43,14 @@ namespace Web.Actions.Aggregator.Controllers
             string jsonString = r.ReadToEnd();
 
             Dictionary<string, object> inmodel = new Dictionary<string, object>();
-            foreach(var item in aggregateModule.MapStateModel)
+            foreach (var item in aggregateModule.MapStateModel)
             {
                 inmodel.Add(item.Key, item.Value);
             }
 
-            //var response = new Mapper().GetTreeMapResult(jsonString, inmodel, new Dictionary<string, object>());
+            var response = new Mapper().GetTreeMapResult(jsonString, inmodel, new Dictionary<string, object>());
 
-            return Ok(aggregateModule.MapStateModel);
+            return Ok(response);
         }
     }
 }

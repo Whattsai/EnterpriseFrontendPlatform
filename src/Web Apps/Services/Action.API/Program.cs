@@ -25,11 +25,11 @@ builder.Services.AddControllers()
         //options.JsonSerializerOptions.ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip;
         //options.JsonSerializerOptions.MaxDepth = 10;
         //options.JsonSerializerOptions.UnknownTypeHandling = System.Text.Json.Serialization.JsonUnknownTypeHandling.JsonNode;
-    })
-    .AddNewtonsoftJson(options =>
-    {
-        options.SerializerSettings.ContractResolver = new DefaultContractResolver();
     });
+    //.AddNewtonsoftJson(options =>
+    //{
+    //    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+    //});
 builder.Services.AddDaprClient();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

@@ -21,7 +21,7 @@ namespace HttpClientAPI.Controllers
         }
 
         [HttpPost("APIGet")]
-        public async Task<Dictionary<string, object>> APIGet(EFPRequest request)
+        public async Task<object> APIGet(EFPRequest request)
         {
             StreamReader r = new StreamReader($"SettingData/API/{request.ID}.json");
             string jsonString = r.ReadToEnd();
@@ -30,7 +30,7 @@ namespace HttpClientAPI.Controllers
             var url = StringParse.GetCombinedString(apiSetting.URL, request.Data);
             var result = await _httpClient.GetAsync(url);
             var respose = await result.Content.ReadAsStringAsync();
-            return JsonTrans.ToModelOrDefault<Dictionary<string, object>>(respose);
+            return respose;
         }
     }
 }
