@@ -35,7 +35,7 @@
                                     <p>
                                         發薪單位：
                                         <select v-model="bonusInfo.Selected" style="width:300px;" dyweb-watch="bonusInfo.Selected,Aggr_Post('C','Title')" dyweb-selectinitial="Aggr_Post('selectinitial','Title'))">
-                                            <option dyweb-model="object[]" v-for="item in bonusInfo.Companies" :value="item.ID" :key="item.ID" dyweb-vfor-model="string">{{item.ID}}</option>
+                                            <option dyweb-model="object[]" v-for="item in bonusInfo.Companies" :value="item.ID" :key="item.ID" dyweb-vfor-model="number">{{item.ID}}</option>
                                         </select>
                                     </p>
                                     <span class="bounses_title" id="bounses_title">員工資料</span>
@@ -82,7 +82,7 @@
                                                     </tr>
                                                     <tr dyweb-model="object[]" v-for="item in bonusInfo.ER">
                                                         <td>{{item.Description}}</td>
-                                                        <td>{{item.Amount}}</td>
+                                                        <td dyweb-vfor-model="number">{{item.Amount}}</td>
                                                         <td>獎金補充保費</td>
                                                         <td>1,250</td>
                                                     </tr>
