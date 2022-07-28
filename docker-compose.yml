@@ -6,12 +6,12 @@ networks:
 
 services:
 # Deploy other daprized services and components
-  maildev:
-    image: maildev/maildev
+  #maildev:
+  #  image: maildev/maildev
   #rabbitmq:
   #  image: rabbitmq:3-management-alpine
   redis:
-    image: redis:alpine
+    image: redis:latest
     networks:
       - efp-dapr
   #seq:
@@ -19,20 +19,13 @@ services:
   #sqldata:
   #  image: mcr.microsoft.com/mssql/server:2017-latest 
   zipkin:
-    image: openzipkin/zipkin-slim
+    image: openzipkin/zipkin
   dapr-placement:
-    image: "daprio/dapr:1.5.1"
+    image: "daprio/dapr:1.6.0"
     networks:
       - efp-dapr
 
-  #dynamicwebsite:
-  #  image: dynamicwebsite
-  #  build:
-  #    context: ./webapp
-  #    dockerfile: Dockerfile
-
 # Deploy self customized app daprized services
-
   web.actions.aggregator:
     image: ${DOCKER_REGISTRY-}webactionsaggregator
     build:
@@ -41,23 +34,71 @@ services:
     networks:
       - efp-dapr
   web.actions.aggregator-dapr:
-    image: "daprio/daprd:1.5.1"
+    image: "daprio/daprd:1.6.0"
     network_mode: "service:web.actions.aggregator"
     depends_on:
       - web.actions.aggregator
 
+  action.api:
+    image: ${DOCKER_REGISTRY-}actionapi
+    build:
+      context: .
+      dockerfile: src/Web Apps/Services/Action.API/Dockerfile
+    networks:
+      - efp-dapr
+  action.api-dapr:
+    image: "daprio/daprd:1.6.0"
+    network_mode: "service:action.api"
+    depends_on:
+      - action.api
+
+  httpclient.api:
+    image: ${DOCKER_REGISTRY-}httpclientapi
+    build:
+      context: .
+      dockerfile: src/Web Apps/Services/Execution/External/HttpClient/Dockerfile
+    networks:
+      - efp-dapr
+  httpclient.api-dapr:
+    image: "daprio/daprd:1.6.0"
+    network_mode: "service:httpclient.api"
+    depends_on:
+      - httpclient.api
+    
   rulecollections.api:
     image: ${DOCKER_REGISTRY-}rulecollectionsapi
     build:
       context: .
-      dockerfile: src/Web Apps/Services/CoreProcess/Logic/RuleCollections.API/Dockerfile
+      dockerfile: src/Web Apps/Services/Execution/Logic/RuleCollections.API/Dockerfile
     depends_on:
       - redis
     networks:
       - efp-dapr
   rulecollections.api-dapr:
-    image: "daprio/daprd:1.5.1"
+    image: "daprio/daprd:1.6.0"
     network_mode: "service:rulecollections.api"
     depends_on:
       - rulecollections.api
 
+  managementcollections.api:
+    image: ${DOCKER_REGISTRY-}managementcollectionsapi
+    build:
+      context: .
+      dockerfile: src/Setting Apps/ManagementCollections.API/Dockerfile
+    depends_on:
+      - redis
+    networks:
+      - efp-dapr
+  managementcollections.api-dapr:
+    image: "daprio/daprd:1.6.0"
+    network_mode: "service:managementcollections.api"
+    depends_on:
+      - managementcollections.api
+
+  hr.test:
+    image: ${DOCKER_REGISTRY-}hrtest
+    build:
+      context: .
+      dockerfile: src/Web Apps/Test/HR/Dockerfile
+    networks:
+      - efp-dapr

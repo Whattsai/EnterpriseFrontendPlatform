@@ -1,0 +1,5 @@
+{
+    "URL":"http://host.docker.internal:6001/api/PersonalData/GetBonus?year=2020&employeeID=15235&companyCode=098",
+    "Header": "",
+    "Body": ""
+}

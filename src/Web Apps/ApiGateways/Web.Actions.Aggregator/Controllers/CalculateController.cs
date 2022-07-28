@@ -12,10 +12,12 @@ namespace Web.Actions.Aggregator.Controllers
     public class CalculateController : ControllerBase
     {
         private readonly DaprClient _daprClient;
+        private readonly HttpClient _httpClient;
 
-        public CalculateController(DaprClient daprClient)
+        public CalculateController(DaprClient daprClient, HttpClient httpClient)
         {
             _daprClient = daprClient;
+            _httpClient = httpClient;
         }
 
         [HttpGet("DaprServiceInvoke")]
@@ -53,6 +55,31 @@ namespace Web.Actions.Aggregator.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// HR TEST
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("HttpClient")]
+        public async Task<ActionResult> GetHttpClientResultAsync()
+        {
+            var result = await _httpClient.GetAsync("http://host.docker.internal:6001/api/PersonalData/GetBonus?year=2020&employeeID=15235&companyCode=098");
+            var resultContent = string.Format("result is {0} {1}", result.StatusCode, await result.Content.ReadAsStringAsync());
+            return Ok(resultContent);
+        }
+
+        [HttpGet("DaprBindingHttp")]
+        public async Task<ActionResult> BindingHttpAsync()
+        {
+            var metadata = new Dictionary<string, string>()
+            {
+                ["path"] = "/Rule/TestSelfCall"
+            };
+            var data = new Dictionary<string, string>(){};
+            var result = await _daprClient.InvokeBindingAsync<Dictionary<string,string>, object>("ehr_httpbinding", "get", data, metadata);
+            return Ok(result);
+        }
+
+        /* 使用Grpc通訊
         [HttpGet("DaprServiceInvokeGrpc")]
         public async Task<ActionResult> DaprClientGRPCWithDIResultAsync()
         {
@@ -87,5 +114,6 @@ namespace Web.Actions.Aggregator.Controllers
             var result = await _daprClient.InvokeMethodGrpcAsync<HelloReply>("logicapi", "rule/testpubself");
             return Ok(result);
         }
+        */
     }
 }

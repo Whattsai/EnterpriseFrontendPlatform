@@ -15,7 +15,8 @@
     "moment": "^2.29.2",
     "reflect-metadata": "^0.1.13",
     "vue": "^3.2.13",
-    "vue-class-component": "^8.0.0-0"
+    "vue-class-component": "^8.0.0-0",
+    "vue-cli": "^2.9.6"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
