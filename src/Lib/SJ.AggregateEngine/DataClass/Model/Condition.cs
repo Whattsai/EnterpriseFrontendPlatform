@@ -32,6 +32,8 @@ namespace ActionEngine.DataClass.Model
         /// Mapping完的物件
         /// </summary>
         public Dictionary<string, object> OutModel { get; set; }
+
+        public Dictionary<string, object> RequestModel { get; set; }
     }
 
 

@@ -24,13 +24,14 @@ namespace SJ.ObjectMapper.Module
         {
             ITrans = new Dictionary<EnumTransWay, transMethod>()
             {
-            { EnumTransWay.Default, new transMethod(Default) },
-            { EnumTransWay.SetNull, new transMethod(setNull) },
-            { EnumTransWay.TwoListToDictionary, new transMethod(twoListToDictionary) },
-            { EnumTransWay.SetDateTimeByNow, new transMethod(SetDateTimeByNow) },
-            { EnumTransWay.SetByInParameter, new transMethod(SetByInParameter) },
-            { EnumTransWay.setNewGuid, new transMethod(setNewGuid) },
-            { EnumTransWay.ListObjectToListObject, new transMethod(ListObjectToListObject) },
+                { EnumTransWay.Default, new transMethod(Default) },
+                { EnumTransWay.SetNull, new transMethod(setNull) },
+                { EnumTransWay.TwoListToDictionary, new transMethod(twoListToDictionary) },
+                { EnumTransWay.SetDateTimeByNow, new transMethod(SetDateTimeByNow) },
+                { EnumTransWay.SetByInParameter, new transMethod(SetByInParameter) },
+                { EnumTransWay.setNewGuid, new transMethod(setNewGuid) },
+                { EnumTransWay.ListObjectToListObject, new transMethod(ListObjectToListObject) },
+                { EnumTransWay.Custom, new transMethod(ListObjectToListObject) },
             };
         }
 
@@ -75,7 +76,7 @@ namespace SJ.ObjectMapper.Module
                 }
                 else
                 {
-                    EnumTransWay transway = (EnumTransWay)(sub.Value["TransWay"]?? EnumTransWay.Default);
+                    EnumTransWay transway = (EnumTransWay)(sub.Value["TransWay"] ?? EnumTransWay.Default);
                     var next = sub.Value["Next"] == null ? null : sub.Value["Next"].ToObject<object>();
                     var mapping = new TreeMappingModel(sub.Key, (string)sub.Value["InParameter"], transway, next);
                     if (!outModel.ContainsKey(sub.Key))
@@ -224,13 +225,13 @@ namespace SJ.ObjectMapper.Module
                 var hierarchyList = stringHierarchy.Split('.');
                 foreach (var h in hierarchyList)
                 {
-                    if (inModelData == null)
+                    var aaa = inModelData.GetType().Name;
+                    if (inModelData.GetType().Name != "JsonElement" && inModelData == null)
                     {
-                        return null;
+                        return inModelData;
                     }
 
                     Dictionary<string, object> imModelDict = new Dictionary<string, object>();
-                    var aaaa = inModelData.GetType().Name;
                     if (inModelData.GetType().Name != "Dictionary`2")
                     {
                         imModelDict = DictionaryEx.ToDictionary<object>(inModelData);
@@ -246,12 +247,6 @@ namespace SJ.ObjectMapper.Module
                     }
 
                     inModelData = imModelDict[h];
-
-                    // TODO 遇到裡面是Array不知道怎麼處理拉，直接通通丟回去
-                    //if (inModelData.GetType().Name == "JArray")
-                    //{
-                    //    return inModelData;
-                    //}
                 }
             }
             else if (stringHierarchy == string.Empty)

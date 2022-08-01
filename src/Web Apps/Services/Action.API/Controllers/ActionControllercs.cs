@@ -35,15 +35,16 @@ namespace Action.API.Controllers
 
             ActionModule actionModule = new ActionModule(_daprClient);
 
-            Dictionary<string, object> tmp = DictionaryEx.ToDictionary<object>(request.Data);
+            Dictionary<string, object> requestModel = DictionaryEx.ToDictionary<object>(request.Data);
+            Dictionary<string, object> ans = new Dictionary<string, object>();
 
             foreach (var action in actions)
             {
-                tmp = actionModule.Go(action, tmp);
+                ans = actionModule.Go(action, requestModel);
+                //ans.Add(action.Name, actionModule.Go(action, requestModel));
             }
 
-            return  Content(JsonSerializer.Serialize(new StateModel(true, tmp["Data"])), "application/json", Encoding.UTF8);
-            //return Ok(new StateModel(true, tmp["Data"]));
+            return  Content(JsonSerializer.Serialize(new StateModel(true, ans)), "application/json", Encoding.UTF8);
         }
 
         [HttpPost("Test")]

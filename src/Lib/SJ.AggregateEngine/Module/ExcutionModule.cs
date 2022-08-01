@@ -1,4 +1,5 @@
 ﻿using ActionEngine.DataClass.Model;
+using ActionEngine.Module.Execution;
 using Dapr.Client;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace ActionEngine.Module
             _daprClient = daprClient;
             IExection = new Dictionary<EnumActionType, ExectionMethod>()
             {
-                {EnumActionType.ApiGet, new ExectionMethod(new API(_daprClient).ApiGet) }
+                {EnumActionType.ApiGet, new ExectionMethod(new API(_daprClient).ApiGet) },
             };
         }
 

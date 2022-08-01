@@ -1,0 +1,8 @@
+{
+  "HRGetBouns": {
+    "InParameter": "Action_HRGetBouns.ResponseData.ReturnData"
+  },
+  "GetAnnualSalary": {
+    "InParameter": "Action_HRGetAnnualSalary.ResponseData.ReturnData"
+  }
+}

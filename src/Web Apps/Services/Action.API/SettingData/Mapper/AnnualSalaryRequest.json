@@ -1,0 +1,11 @@
+{
+  "CompanyCode": {
+    "InParameter": "Request&1.CompanyCode"
+  },
+  "EmpID": {
+    "InParameter": "Request&1.EmpID"
+  },
+  "Year": {
+    "InParameter": "Request&1.Year"
+  }
+}

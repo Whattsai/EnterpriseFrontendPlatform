@@ -75,6 +75,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logic", "Logic", "{CDC4E244
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RuleCollections.API", "src\Web Apps\Services\Execution\Logic\RuleCollections.API\RuleCollections.API.csproj", "{D75F0CA6-5DDE-4875-A86E-7BACD83AE7D1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Calculate.API", "src\Web Apps\Services\Execution\Logic\Calculate.API\Calculate.API.csproj", "{5912F200-05DE-4927-A2EA-42A338735DCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +143,10 @@ Global
 		{D75F0CA6-5DDE-4875-A86E-7BACD83AE7D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D75F0CA6-5DDE-4875-A86E-7BACD83AE7D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D75F0CA6-5DDE-4875-A86E-7BACD83AE7D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5912F200-05DE-4927-A2EA-42A338735DCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5912F200-05DE-4927-A2EA-42A338735DCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5912F200-05DE-4927-A2EA-42A338735DCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5912F200-05DE-4927-A2EA-42A338735DCD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -175,6 +181,7 @@ Global
 		{5888D44F-8943-41E7-BB0E-7C440367269D} = {F58531BF-EF14-4F2B-BF11-710AB889B2D3}
 		{CDC4E244-1052-43C4-9199-FF7A69CAD0E8} = {0036CD6F-A257-436F-9EFC-241E7C91D7A6}
 		{D75F0CA6-5DDE-4875-A86E-7BACD83AE7D1} = {CDC4E244-1052-43C4-9199-FF7A69CAD0E8}
+		{5912F200-05DE-4927-A2EA-42A338735DCD} = {CDC4E244-1052-43C4-9199-FF7A69CAD0E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {558E31DA-7255-40CA-B269-3DDAFCC53D56}

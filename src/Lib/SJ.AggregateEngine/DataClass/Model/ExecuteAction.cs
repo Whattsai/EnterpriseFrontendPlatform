@@ -24,5 +24,11 @@ namespace ActionEngine.DataClass.Model
     public enum EnumActionType
     {
         ApiGet = 11,
+
+        ApiPost = 12,
+
+        ApiPut = 13,
+
+        ApiDelete = 14,
     }
 }

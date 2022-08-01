@@ -9,12 +9,12 @@ namespace Web.Actions.Aggregator.Controllers
     /// </summary>
     [Route("[controller]")]
     [ApiController]
-    public class CalculateController : ControllerBase
+    public class TemplateCodeController : ControllerBase
     {
         private readonly DaprClient _daprClient;
         private readonly HttpClient _httpClient;
 
-        public CalculateController(DaprClient daprClient, HttpClient httpClient)
+        public TemplateCodeController(DaprClient daprClient, HttpClient httpClient)
         {
             _daprClient = daprClient;
             _httpClient = httpClient;

@@ -13,6 +13,7 @@ namespace ActionEngine.DataClass.Model
         public ActionModel() { }
 
         public ActionModel(
+            string name,
             Condition beforeExecuteCondition,
             ExecuteAction executeAction,
             Condition afterExecuteCondition,
@@ -21,6 +22,7 @@ namespace ActionEngine.DataClass.Model
             string? failMapperKey = null
             )
         {
+            Name = name;
             this.BeforeExecuteCondition = beforeExecuteCondition;
             this.ExecuteAction = executeAction;
             this.AfterExecuteCondition = afterExecuteCondition;
@@ -28,6 +30,8 @@ namespace ActionEngine.DataClass.Model
             this.PreAction = preAction?? new Dictionary<string, ActionModel>();
             this.FailMapperKey = failMapperKey;
         }
+
+        public string Name { get; set; }
 
         /// <summary>
         /// 是否執行判斷式
@@ -69,6 +73,8 @@ namespace ActionEngine.DataClass.Model
     public class ActionSettingModel
     {
         public ActionSettingModel() { }
+
+        public string Name { get; set; }
 
         public ConditionSettingModel BeforeExecuteCondition { get; set; }
 

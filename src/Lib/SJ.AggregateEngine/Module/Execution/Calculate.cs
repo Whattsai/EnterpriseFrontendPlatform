@@ -1,15 +1,19 @@
 ﻿using ActionEngine.DataClass.Model;
 using Common.Model;
 using Dapr.Client;
-using SJ.Convert;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace ActionEngine.Module
+namespace SJ.ActionEngine.Module.Execution
 {
-    internal class API
+    public class Calculate
     {
         private readonly DaprClient _daprClient;
 
-        public API(DaprClient daprClient)
+        public Calculate(DaprClient daprClient)
         {
             _daprClient = daprClient;
         }
@@ -21,7 +25,7 @@ namespace ActionEngine.Module
                 ID = action.Key,
                 Data = inModel
             };
-            var result = Task.Run(() => _daprClient.InvokeMethodAsync<EFPRequest, Dictionary<string, object>>(HttpMethod.Post, "httpclient", "api/apiget" ,request)).Result;
+            var result = Task.Run(() => _daprClient.InvokeMethodAsync<EFPRequest, Dictionary<string, object>>(HttpMethod.Post, "httpclient", "GroupBy", request)).Result;
 
             return result;
         }

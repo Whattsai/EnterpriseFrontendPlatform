@@ -39,6 +39,7 @@ namespace ManagementCollections.API.Controllers
                 var execution = JsonConvert.DeserializeObject<ExecuteAction>(jsonString2)!;
 
                 actions.Add(new ActionModel(
+                    item.Name,
                     new Condition(item.BeforeExecuteCondition.MapperKey, _conditionModule.BuildTree(item.BeforeExecuteCondition.ConditionSetting)),
                     new ExecuteAction(execution.Name, execution.ActionType, execution.Key),
                     new Condition(item.AfterExecuteCondition.MapperKey, _conditionModule.BuildTree(item.AfterExecuteCondition.ConditionSetting))
@@ -56,6 +57,7 @@ namespace ManagementCollections.API.Controllers
             ConditionModule _conditionModule = new ConditionModule();
             Dictionary<string, ActionModel> root = new Dictionary<string, ActionModel>();
             root.Add("C1", new ActionModel(
+                "C1_Action",
                 new Condition("mapperKey", _conditionModule.BuildTree(new object[] { "&", "!", "EmpID", null, "!", "Year", null })),
                 new ExecuteAction("GetAPI©I¥sGetAnnualSalary", EnumActionType.ApiGet, "GetAnnualSalary"),
                 new Condition("AnnualSalaryRsponse", _conditionModule.BuildTree(new object[] { "!", "ReturnData", null }))

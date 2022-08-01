@@ -20,10 +20,19 @@ namespace ActionEngine.Module
         public void BeforeExecuteCondition(Condition condition, Dictionary<string, object> request)
         {
             // TODO 尚須處理 request mapping
-            condition.OutModel = request;
+            //condition.OutModel = request;
+            if (!string.IsNullOrEmpty(condition.MapperKey))
+            {
+                StreamReader r = new StreamReader($"SettingData/Mapper/{condition.MapperKey}.json");
+                string jsonString = r.ReadToEnd();
+                condition.RequestModel = new Mapper().GetTreeMapResult(jsonString, request, new Dictionary<string, object>());
+            }
+            else{
+                condition.RequestModel = request;
+            }
 
             // 判斷請求參數是否正確
-            condition.IsOK = conditionModule.Go(condition.ConditionTree, condition.OutModel, condition.OutModel);
+            condition.IsOK = conditionModule.Go(condition.ConditionTree, condition.RequestModel, condition.RequestModel);
         }
 
         public object ExecuteAction(ExecuteAction action, Dictionary<string, object> inModel)
@@ -31,19 +40,24 @@ namespace ActionEngine.Module
             return new ExcutionModule(_daprClient).Go(action, inModel);
         }
 
-        public void AfterExecuteCondition(Condition condition, object request)
+        public void AfterExecuteCondition(Condition condition, object response)
         {
-            Dictionary<string, object> dict = DictionaryEx.ToDictionary<object>(request);
+            Dictionary<string, object> dict = DictionaryEx.ToDictionary<object>(response);
 
             // 判斷請求參數是否正確
             condition.IsOK = conditionModule.Go(condition.ConditionTree, dict, dict);
 
             // TODO 尚須處理 request mapping
-            StreamReader r = new StreamReader($"SettingData/Mapper/{condition.MapperKey}.json");
-            string jsonString = r.ReadToEnd();
-            condition.OutModel = new Mapper().GetTreeMapResult(jsonString, request, new Dictionary<string, object>());
-
-            //condition.OutModel = request;
+            if (!string.IsNullOrEmpty(condition.MapperKey))
+            {
+                StreamReader r = new StreamReader($"SettingData/Mapper/{condition.MapperKey}.json");
+                string jsonString = r.ReadToEnd();
+                condition.OutModel = new Mapper().GetTreeMapResult(jsonString, response, new Dictionary<string, object>());
+            }
+            else
+            {
+                condition.OutModel = dict;
+            }
         }
 
         public Dictionary<string, object> Go(ActionModel action, Dictionary<string, object> request)

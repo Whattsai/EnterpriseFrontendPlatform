@@ -48,6 +48,15 @@ namespace SJ.ObjectMapper.DataClass
             /// </summary>
             TwoListToDictionary = 211,
 
+            /// <summary>
+            /// 依指定keyGroupBy成Dictionary
+            /// </summary>
+            GroupBy = 301,
+
+            /// <summary>
+            /// 客製
+            /// </summary>
+            Custom = 1001
         }
     }
 }
