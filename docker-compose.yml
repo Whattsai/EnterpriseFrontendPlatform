@@ -102,3 +102,9 @@ services:
       dockerfile: src/Web Apps/Test/HR/Dockerfile
     networks:
       - efp-dapr
+
+  dynamicwebsite:
+    image: dynamicwebsite
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile

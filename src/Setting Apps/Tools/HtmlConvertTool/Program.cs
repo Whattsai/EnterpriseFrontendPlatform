@@ -217,7 +217,7 @@ public static class DyWebConvert
 
             file.WriteLine("");
 
-            file.WriteLine($"const {mainDataClassName} = reactive(new {mainDataClassName.FirstCharToUpper()}());");
+            file.WriteLine($"const {mainDataClassName.FirstCharTolower()} = reactive(new {mainDataClassName.FirstCharToUpper()}());");
 
             file.WriteLine("");
 
@@ -246,15 +246,16 @@ public static class DyWebConvert
             file.WriteLine("jsonstring += '\"' + paramInfo[1] + '\":\"' + paramValue + '\"';");
             file.WriteLine("} else {");
             file.WriteLine($"const key = perameters[i] as keyof {mainDataClassName.FirstCharToUpper()};");
-            file.WriteLine($"jsonstring += '\"' + perameters[i] + '\":\"' + {mainDataClassName}[key] + '\"';");
+            file.WriteLine($"jsonstring += '\"' + perameters[i] + '\":\"' + {mainDataClassName.FirstCharTolower()}[key] + '\"';");
             file.WriteLine("}}");
             file.WriteLine("jsonstring += \"} \";");
             file.WriteLine("var postData = JSON.parse(jsonstring);");
             file.WriteLine(" const automapp = (jsonData: any) => {");
             file.WriteLine(" const multiJson = classToPlain(jsonData);");
-            file.WriteLine($" plainToClassFromExist({mainDataClassName}, multiJson);");
+            file.WriteLine($" plainToClassFromExist({mainDataClassName.FirstCharTolower()}, multiJson);");
             file.WriteLine(" }");
-            file.WriteLine(" axios.post('https://localhost:7080/api/Values/BonusInfo', postData)");
+            file.WriteLine(" const postRequest = { ID: executeKey, Data: postData }");
+            file.WriteLine(" axios.post('http://localhost:5006/Action/Go', postRequest)");
             file.WriteLine($" .then((response) => automapp(response.data));");
             file.WriteLine("}");
 
@@ -275,7 +276,7 @@ public static class DyWebConvert
             file.WriteLine("");
 
             /** returm */
-            file.WriteLine($"return {{ {mainDataClassName}, Aggr_Post }}");
+            file.WriteLine($"return {{ {mainDataClassName.FirstCharTolower()}, Aggr_Post }}");
             file.WriteLine("}");
             file.WriteLine("})");
 
@@ -429,7 +430,8 @@ public static class DyWebConvert
             string type = item.GetAttributeValue($"dyweb-model", "default");
             if (item.InnerHtml.Contains("</"))
             {
-                if (type == TSClassType.String.Description())
+                //處理<tr>標記裡的v-for
+                if (type == TSClassType.ObjectArray.Description())
                 {
                     classHierarchy = item.GetAttributeValue($"v-for", "default").Split("in").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
                     AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
@@ -445,9 +447,14 @@ public static class DyWebConvert
             {
                 if (item.InnerText.Contains("{{"))
                 {
-                    if (type == TSClassType.Default.Description())
+                    //處理<option>標記裡的v-for
+                    if (type == TSClassType.ObjectArray.Description())
                     {
+                        classHierarchy = item.GetAttributeValue($"v-for", "default").Split("in").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                        AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+
                         type = item.GetAttributeValue($"dyweb-vfor-model", "string");
+                        GetVforItem(out vforItemName, out vforItemValue, item);
                         if (vforItemName != null)
                         {
                             classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
@@ -456,16 +463,16 @@ public static class DyWebConvert
                         }
                     }
 
-                    if (type == TSClassType.ObjectArray.Description())
+                    //處理<option>標記裡的v-for 細項
+                    if (type == TSClassType.Default.Description())
                     {
-                        if (vforItemName == null)
+                        if (vforItemName != null)
                         {
-                            GetVforItem(out vforItemName, out vforItemValue, item);
+                            classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                            type = item.GetAttributeValue($"dyweb-vfor-model", "string");
+                            AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                            continue;
                         }
-                        classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Split(".");
-                        type = item.GetAttributeValue($"dyweb-vfor--model", "string");
-                        AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-                        continue;
                     }
 
                     classHierarchy = item.InnerText.Replace("{{", "").Replace("}}", "").Split(".");

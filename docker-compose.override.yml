@@ -112,3 +112,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "6001:80"
+
+  dynamicwebsite:
+    ports:
+      - "8080:8080"
+    volumes:
+       - ./webapp:/app
+       - /app/node_modules
