@@ -43,8 +43,6 @@ for (int i = 0; i < initialNodes.Count; i++)
 //產生index.html檔 & App.Vue
 DyWebConvert.CreateIndex(doc);
 
-Console.ReadLine();
-
 
 public static class DyWebConvert
 {
@@ -255,7 +253,7 @@ public static class DyWebConvert
             file.WriteLine($" plainToClassFromExist({mainDataClassName.FirstCharTolower()}, multiJson);");
             file.WriteLine(" }");
             file.WriteLine(" const postRequest = { ID: executeKey, Data: postData }");
-            file.WriteLine(" axios.post('http://localhost:5006/Action/Go', postRequest)");
+            file.WriteLine(" axios.post('http://localhost:5002/Aggregate/Go', postRequest)");
             file.WriteLine($" .then((response) => automapp(response.data));");
             file.WriteLine("}");
 
@@ -266,7 +264,7 @@ public static class DyWebConvert
             {
                 AggrPostInfo initialInfo = initialInfos.Dequeue();
                 string postPerameter = String.Join(", ", initialInfo.Perameter);
-                file.WriteLine($"Aggr_Post(\"{initialInfo.ExecuteKey}\",{postPerameter})");
+                file.WriteLine($"Aggr_Post({initialInfo.ExecuteKey},{postPerameter})");
 
                 file.WriteLine("");
             }
@@ -433,7 +431,7 @@ public static class DyWebConvert
                 //處理<tr>標記裡的v-for
                 if (type == TSClassType.ObjectArray.Description())
                 {
-                    classHierarchy = item.GetAttributeValue($"v-for", "default").Split("in").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                    classHierarchy = item.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
                     AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
                     GetVforItem(out vforItemName, out vforItemValue, item);
                     AnalyticalNode(item, dataClassInfos, vforItemName, vforItemValue);
@@ -450,7 +448,7 @@ public static class DyWebConvert
                     //處理<option>標記裡的v-for
                     if (type == TSClassType.ObjectArray.Description())
                     {
-                        classHierarchy = item.GetAttributeValue($"v-for", "default").Split("in").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                        classHierarchy = item.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
                         AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
 
                         type = item.GetAttributeValue($"dyweb-vfor-model", "string");
@@ -486,8 +484,8 @@ public static class DyWebConvert
 
     private static void GetVforItem(out string vforItemName, out string vforItemValue, HtmlNode item)
     {
-        vforItemName = item.GetAttributeValue($"v-for", "default").Split("in").FirstOrDefault().Trim();
-        vforItemValue = item.GetAttributeValue($"v-for", "default").Split("in").LastOrDefault().Split(".").LastOrDefault().Trim();
+        vforItemName = item.GetAttributeValue($"v-for", "default").Split(" in ").FirstOrDefault().Trim();
+        vforItemValue = item.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Split(".").LastOrDefault().Trim();
     }
 }
 
