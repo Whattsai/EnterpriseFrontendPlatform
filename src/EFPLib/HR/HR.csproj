@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Lib\Aggregate\Aggregate.csproj" />
+    <ProjectReference Include="..\..\Lib\ObjectMapper\SJ.ObjectMapper.csproj" />
+  </ItemGroup>
+
 </Project>

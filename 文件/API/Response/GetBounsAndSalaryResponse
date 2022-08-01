@@ -1,0 +1,33 @@
+{
+
+    "EmployeeID":"",
+    "EmployName":"",
+    "JobTitle":"",
+    "BackAccount1":"",
+    "BackAccount2":"",
+
+
+    "ERDD":[
+        {
+            "ERName":"",
+            "ERSalary":"",
+            "DDName":"",
+            "DDSalary":""    
+        }
+    ],
+
+    "ERTotal":"",
+    "DDTotal":"",
+    "Total": "",
+    "Remark":[],
+
+    "SalaryItemRemark": [],
+
+    "YearSalary":"",
+    "AnnualSalary": [
+        {
+            "SalaryItemCategoryIIIName":"SalaryItemCategoryIIIName",
+            "SalaryAmt":"Salary_Amt"
+        }
+    ]
+}

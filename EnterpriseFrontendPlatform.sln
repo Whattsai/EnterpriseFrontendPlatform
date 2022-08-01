@@ -75,7 +75,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logic", "Logic", "{CDC4E244
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RuleCollections.API", "src\Web Apps\Services\Execution\Logic\RuleCollections.API\RuleCollections.API.csproj", "{D75F0CA6-5DDE-4875-A86E-7BACD83AE7D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Calculate.API", "src\Web Apps\Services\Execution\Logic\Calculate.API\Calculate.API.csproj", "{5912F200-05DE-4927-A2EA-42A338735DCD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Calculate.API", "src\Web Apps\Services\Execution\Logic\Calculate.API\Calculate.API.csproj", "{5912F200-05DE-4927-A2EA-42A338735DCD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -53,6 +53,24 @@ namespace SJ.ObjectMapper.Module
             return treeRecursion(treeMap, outModel);
         }
 
+        /// <summary>
+        /// 樹狀設定結構取的結果
+        /// </summary>
+        /// <typeparam name="T">要轉換的強行別</typeparam>
+        /// <param name="jsonString">jsonString</param>
+        /// <param name="inModel">要被轉換的物件</param>
+        /// <param name="outModel">outModel原始資料</param>
+        /// <returns>T</returns>
+        public T GetTreeMapResult<T>(string jsonString, object inModel, object outModel)
+        {
+            var treeMap = JsonTrans.ToModelOrDefault<Dictionary<string, dynamic>>(jsonString);
+            _inModel = inModel;
+
+            var jsonModelT = JsonConvert.SerializeObject(treeRecursion(treeMap, DictionaryEx.ToDictionary<object>(outModel)));
+            return JsonTrans.ToModelOrDefault<T>(jsonModelT);
+        }
+
+
         /// <summary>
         /// 樹狀設定方式
         /// </summary>
@@ -95,8 +113,8 @@ namespace SJ.ObjectMapper.Module
         {
             var parameterDict = DictionaryEx.ToDictionary<string>(obj.InParameter);
 
-            var keyListTmp = getDataHierarchy(parameterDict["KeyList"], _inModel);
-            var valueListTmp = getDataHierarchy(parameterDict["ValueList"], _inModel);
+            var keyListTmp = GetDataHierarchy(parameterDict["KeyList"], _inModel);
+            var valueListTmp = GetDataHierarchy(parameterDict["ValueList"], _inModel);
 
             var keyList = JsonTrans.ToModelOrDefault<List<string>>(keyListTmp?.ToString());
             var valueList = JsonTrans.ToModelOrDefault<List<string>>(valueListTmp?.ToString());
@@ -127,7 +145,7 @@ namespace SJ.ObjectMapper.Module
         /// <returns>object</returns>
         private object Default(TreeMappingModel obj)
         {
-            return getDataHierarchy(obj.InParameter?.ToString(), _inModel);
+            return GetDataHierarchy(obj.InParameter?.ToString(), _inModel);
         }
 
         /// <summary>
@@ -157,7 +175,7 @@ namespace SJ.ObjectMapper.Module
         /// <returns>object</returns>
         private object toOAOValueSingle(TreeMappingModel obj)
         {
-            var tmp = getDataHierarchy(obj.InParameter?.ToString(), _inModel);
+            var tmp = GetDataHierarchy(obj.InParameter?.ToString(), _inModel);
 
             Dictionary<string, Dictionary<string, object>> ans = new Dictionary<string, Dictionary<string, object>>();
             ans.Add(obj.OutKey, new Dictionary<string, object>());
@@ -188,7 +206,7 @@ namespace SJ.ObjectMapper.Module
                 throw new Exception("未設定Array內物件");
             }
 
-            var data = getDataHierarchy(map.InParameter?.ToString(), _inModel);
+            var data = GetDataHierarchy(map.InParameter?.ToString(), _inModel);
 
             return toDictionary<object>(data, map);
         }
@@ -218,7 +236,7 @@ namespace SJ.ObjectMapper.Module
         /// <param name="stringHierarchy">物件路徑</param>
         /// <param name="inModelData">要被轉換的Model資訊</param>
         /// <returns>object</returns>
-        private dynamic getDataHierarchy(string stringHierarchy, dynamic inModelData)
+        public dynamic GetDataHierarchy(string stringHierarchy, dynamic inModelData)
         {
             if (!string.IsNullOrEmpty(stringHierarchy))
             {
@@ -264,6 +282,60 @@ namespace SJ.ObjectMapper.Module
             }
 
             return inModelData;
+        }
+
+        /// <summary>
+        /// 深度model取值
+        /// </summary>
+        /// <param name="stringHierarchy">物件路徑</param>
+        /// <param name="inModelData">要被轉換的Model資訊</param>
+        /// <returns>object</returns>
+        public T? GetDataHierarchy<T>(string stringHierarchy, dynamic inModelData)
+        {
+            if (!string.IsNullOrEmpty(stringHierarchy))
+            {
+                var hierarchyList = stringHierarchy.Split('.');
+                foreach (var h in hierarchyList)
+                {
+                    var aaa = inModelData.GetType().Name;
+                    if (inModelData.GetType().Name != "JsonElement" && inModelData == null)
+                    {
+                        return inModelData;
+                    }
+
+                    Dictionary<string, object> imModelDict = new Dictionary<string, object>();
+                    if (inModelData.GetType().Name != "Dictionary`2")
+                    {
+                        imModelDict = DictionaryEx.ToDictionary<object>(inModelData);
+                    }
+                    else
+                    {
+                        imModelDict = inModelData;
+                    }
+
+                    if (!imModelDict.ContainsKey(h))
+                    {
+                        return default(T);
+                    }
+
+                    inModelData = imModelDict[h];
+                }
+            }
+            else if (stringHierarchy == string.Empty)
+            {
+                if (_inModel.GetType().Name == "JArray")
+                {
+                    return JsonConvert.DeserializeObject<List<dynamic>>(JsonConvert.SerializeObject(_inModel));
+                }
+
+                return (T)inModelData;
+            }
+            else
+            {
+                return default(T);
+            }
+
+            return (T)inModelData;
         }
     }
 }

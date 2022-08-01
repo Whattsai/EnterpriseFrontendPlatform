@@ -1,6 +1,7 @@
 ﻿using Aggregate.Module;
 using Common.Model;
 using Dapr.Client;
+using HR.Moudule;
 using Microsoft.AspNetCore.Mvc;
 using SJ.ObjectMapper.Module;
 
@@ -27,30 +28,32 @@ namespace Web.Actions.Aggregator.Controllers
             request.Token = new Guid();
 
             // 取得參數
-            var mapNextAction = await _daprClient.GetStateAsync<SortedDictionary<string, List<string>>>("statestore", request.ID);
+            var aggregateSetting = await _daprClient.GetStateAsync<SortedDictionary<string, List<string>>>("statestore", request.ID);
 
-            if (mapNextAction == null)
+            if (aggregateSetting == null)
             {
-                mapNextAction = await _daprClient.InvokeMethodAsync<SortedDictionary<string, List<string>>>(HttpMethod.Get, "managementapi", $"aggregatesetting/build?aggregateID={ request.ID }");
+                aggregateSetting = await _daprClient.InvokeMethodAsync<SortedDictionary<string, List<string>>>(HttpMethod.Get, "managementapi", $"aggregatesetting/build?aggregateID={ request.ID }");
             }
 
             // 初始化AggregateModule
-            AggregateModule aggregateModule = new AggregateModule(mapNextAction, _daprClient, request);
+            AggregateModule aggregateModule = new AggregateModule(aggregateSetting, _daprClient, request);
             Task.Run(() => aggregateModule.Go()).Wait();
 
             // 整理response
-            StreamReader r = new StreamReader($"SettingData/Mapper/{request.ID}.json");
-            string jsonString = r.ReadToEnd();
+            //StreamReader r = new StreamReader($"SettingData/Mapper/{request.ID}.json");
+            //string jsonString = r.ReadToEnd();
 
-            Dictionary<string, object> inmodel = new Dictionary<string, object>();
-            foreach (var item in aggregateModule.MapStateModel)
-            {
-                inmodel.Add(item.Key, item.Value);
-            }
+            //Dictionary<string, object> inmodel = new Dictionary<string, object>();
+            //foreach (var item in aggregateModule.MapStateModel)
+            //{
+            //    inmodel.Add(item.Key, item.Value);
+            //}
 
-            var response = new Mapper().GetTreeMapResult(jsonString, inmodel, new Dictionary<string, object>());
+            //var response = new Mapper().GetTreeMapResult(jsonString, inmodel, new Dictionary<string, object>());
 
-            return Ok(response);
+            var ans = new GetBounsAndSalaryMapper().Go(aggregateModule.MapStateModel);
+
+            return Ok(ans);
         }
     }
 }

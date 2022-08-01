@@ -46,12 +46,5 @@ namespace Action.API.Controllers
 
             return  Content(JsonSerializer.Serialize(new StateModel(true, ans)), "application/json", Encoding.UTF8);
         }
-
-        [HttpPost("Test")]
-        public async Task<StateModel> Test(string id)
-        {
-
-            return new StateModel(true, id);
-        }
     }
 }
