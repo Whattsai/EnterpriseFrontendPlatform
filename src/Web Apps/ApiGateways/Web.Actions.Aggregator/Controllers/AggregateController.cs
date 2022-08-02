@@ -1,9 +1,11 @@
-﻿using Aggregate.Module;
+﻿using Aggregate.Model;
+using Aggregate.Module;
 using Common.Model;
 using Dapr.Client;
 using HR.Moudule;
 using Microsoft.AspNetCore.Mvc;
 using SJ.ObjectMapper.Module;
+using System.Collections.Concurrent;
 
 namespace Web.Actions.Aggregator.Controllers
 {
@@ -16,9 +18,18 @@ namespace Web.Actions.Aggregator.Controllers
     {
         private readonly DaprClient _daprClient;
 
+        private Dictionary<string, MapperWay> _IMapper { get; set; }
+
+        private delegate object MapperWay(ConcurrentDictionary<string, StateModel> stateModel);
+
         public AggregateController(DaprClient daprClient)
         {
             _daprClient = daprClient;
+
+            _IMapper = new Dictionary<string, MapperWay>()
+            {
+                {"Aggregate_EFP.GetBounsAndSalary", new MapperWay(new GetBounsAndSalaryMapper().Go) }
+            };
         }
 
         [HttpPost("GO")]
@@ -39,21 +50,22 @@ namespace Web.Actions.Aggregator.Controllers
             AggregateModule aggregateModule = new AggregateModule(aggregateSetting, _daprClient, request);
             Task.Run(() => aggregateModule.Go()).Wait();
 
-            // 整理response
-            //StreamReader r = new StreamReader($"SettingData/Mapper/{request.ID}.json");
-            //string jsonString = r.ReadToEnd();
+            // 整理response，如客製字典內無對應，則使用預設mapper
+            if (_IMapper.ContainsKey(request.ID))
+            {
+                return Ok(new MapperWay(_IMapper[request.ID]).Invoke(aggregateModule.MapStateModel));
+            }
 
-            //Dictionary<string, object> inmodel = new Dictionary<string, object>();
-            //foreach (var item in aggregateModule.MapStateModel)
-            //{
-            //    inmodel.Add(item.Key, item.Value);
-            //}
+            StreamReader r = new StreamReader($"settingdata/mapper/{request.ID}.json");
+            string jsonstring = r.ReadToEnd();
 
-            //var response = new Mapper().GetTreeMapResult(jsonString, inmodel, new Dictionary<string, object>());
+            Dictionary<string, object> inmodel = new Dictionary<string, object>();
+            foreach (var item in aggregateModule.MapStateModel)
+            {
+                inmodel.Add(item.Key, item.Value);
+            }
 
-            var ans = new GetBounsAndSalaryMapper().Go(aggregateModule.MapStateModel);
-
-            return Ok(ans);
+            return Ok(new Mapper().GetTreeMapResult(jsonstring, inmodel, new Dictionary<string, object>()));
         }
     }
 }
