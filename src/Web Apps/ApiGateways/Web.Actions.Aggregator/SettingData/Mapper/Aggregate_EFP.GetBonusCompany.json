@@ -1,0 +1,5 @@
+{
+  "CompanyInfo": {
+    "InParameter": "Action_HRGetBonusCompany.ResponseData.ReturnData"
+  }
+}

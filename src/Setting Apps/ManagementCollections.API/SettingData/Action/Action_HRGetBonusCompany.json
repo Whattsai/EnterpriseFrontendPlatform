@@ -1,0 +1,13 @@
+[
+  {
+    "BeforeExecuteCondition": {
+      "MapperKey": null,
+      "ConditionSetting": [ "&", "!", "EmpID", null, "!", "Year", null ]
+    },
+    "ExecuteActionID": "Execution_HR.GetBonusCompany",
+    "AfterExecuteCondition": {
+      "MapperKey": null,
+      "ConditionSetting": [ "!", "ReturnData", null ]
+    }
+  }
+]

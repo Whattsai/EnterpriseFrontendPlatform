@@ -93,7 +93,10 @@ namespace HR_PersonalData.Controllers
                 {
                     new BonusCompay() {
                         CompanyTypeCode = "098",
-                        CompanyTypeName = "玉山金融控股股份有限公司" }
+                        CompanyTypeName = "玉山金融控股股份有限公司" },
+                     new BonusCompay() {
+                        CompanyTypeCode = "001",
+                        CompanyTypeName = "玉山銀行股份有限公司" }
                 }
             };
         }
