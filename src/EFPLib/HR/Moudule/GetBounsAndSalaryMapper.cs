@@ -9,18 +9,20 @@ namespace HR.Moudule
 {
     public class GetBounsAndSalaryMapper
     {
-
         Mapper _mapper = new Mapper();
 
         public GetBounsAndSalaryResponse Go(ConcurrentDictionary<string, StateModel> statModel)
         {
-            var jsonModelBouns = JsonSerializer.Serialize(_mapper.GetDataHierarchy("Action_HRGetBouns.ResponseData.ReturnData", statModel));
-            var jsonModelSalary = JsonSerializer.Serialize(_mapper.GetDataHierarchy("Action_HRGetAnnualSalary.ResponseData.ReturnData", statModel));
-            List<Bouns> bounsDatas = JsonTrans.ToModelOrDefault<List<Bouns>>(jsonModelBouns);
-            List<AnnualSalary> salaryData = JsonTrans.ToModelOrDefault<List<AnnualSalary>>(jsonModelSalary);
+            List<Bouns>? bounsDatas = _mapper.GetDataHierarchy<List<Bouns>>("Action_HRGetBonus.ResponseData.ReturnData", statModel);
+            List<AnnualSalary>? salaryData = _mapper.GetDataHierarchy<List<AnnualSalary>>("Action_HRGetAnnualSalary.ResponseData.ReturnData", statModel);
 
-            var erList = bounsDatas.FindAll(c => c.PlusorMinus == "ER");
-            var ddList = bounsDatas.FindAll(c => c.PlusorMinus == "DD");
+            var erList = bounsDatas?.FindAll(c => c.PlusorMinus == "ER");
+            var ddList = bounsDatas?.FindAll(c => c.PlusorMinus == "DD");
+            if(erList == null || ddList == null)
+            {
+                throw new Exception("資料有誤:ER與DD為空");
+            }
+
             int index = erList.Count() > ddList.Count() ? erList.Count() : ddList.Count();
             int erTotal = 0;
             int ddTotal = 0;

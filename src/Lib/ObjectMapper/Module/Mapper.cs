@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿
 using SJ.Convert;
 using SJ.ObjectMapper.DataClass;
+using System.Text.Json;
 using static SJ.ObjectMapper.DataClass.Enum;
 
 namespace SJ.ObjectMapper.Module
@@ -66,7 +67,7 @@ namespace SJ.ObjectMapper.Module
             var treeMap = JsonTrans.ToModelOrDefault<Dictionary<string, dynamic>>(jsonString);
             _inModel = inModel;
 
-            var jsonModelT = JsonConvert.SerializeObject(treeRecursion(treeMap, DictionaryEx.ToDictionary<object>(outModel)));
+            var jsonModelT = JsonSerializer.Serialize(treeRecursion(treeMap, DictionaryEx.ToDictionary<object>(outModel)));
             return JsonTrans.ToModelOrDefault<T>(jsonModelT);
         }
 
@@ -270,7 +271,7 @@ namespace SJ.ObjectMapper.Module
             {
                 if (_inModel.GetType().Name == "JArray")
                 {
-                    return JsonConvert.DeserializeObject<List<dynamic>>(JsonConvert.SerializeObject(_inModel));
+                    return JsonTrans.ToModelOrDefault<List<dynamic>>(JsonSerializer.Serialize(_inModel));
                 }
 
                 return inModelData;
@@ -324,17 +325,17 @@ namespace SJ.ObjectMapper.Module
             {
                 if (_inModel.GetType().Name == "JArray")
                 {
-                    return JsonConvert.DeserializeObject<List<dynamic>>(JsonConvert.SerializeObject(_inModel));
+                    return JsonTrans.ToModelOrDefault<List<dynamic>>(JsonSerializer.Serialize(_inModel));
                 }
 
-                return (T)inModelData;
+                return JsonTrans.ToModelOrDefault<T>(JsonSerializer.Serialize(inModelData));
             }
             else
             {
                 return default(T);
             }
 
-            return (T)inModelData;
+            return JsonTrans.ToModelOrDefault<T>(JsonSerializer.Serialize(inModelData));
         }
     }
 }

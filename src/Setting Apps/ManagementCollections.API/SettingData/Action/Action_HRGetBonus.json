@@ -4,7 +4,7 @@
       "MapperKey": null,
       "ConditionSetting": [ "&", "!", "EmpID", null, "!", "Year", null ]
     },
-    "ExecuteActionID": "Execution_HR.GetBouns",
+    "ExecuteActionID": "Execution_HR.GetBonus",
     "AfterExecuteCondition": {
       "MapperKey": null,
       "ConditionSetting": [ "!", "ReturnData", null ]

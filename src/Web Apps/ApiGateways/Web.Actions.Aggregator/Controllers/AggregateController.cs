@@ -28,7 +28,7 @@ namespace Web.Actions.Aggregator.Controllers
 
             _IMapper = new Dictionary<string, MapperWay>()
             {
-                {"Aggregate_EFP.GetBounsAndSalary", new MapperWay(new GetBounsAndSalaryMapper().Go) }
+                {"Aggregate_EFP.GetBonusAndSalary", new MapperWay(new GetBounsAndSalaryMapper().Go) }
             };
         }
 
