@@ -20,7 +20,7 @@ namespace HR.Moudule
             var ddList = bounsDatas?.FindAll(c => c.PlusorMinus == "DD");
             if(erList == null || ddList == null)
             {
-                throw new Exception("資料有誤:ER與DD為空");
+                throw new Exception("資料有誤:ER與DD不可為空");
             }
 
             int index = erList.Count() > ddList.Count() ? erList.Count() : ddList.Count();
