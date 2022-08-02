@@ -24,7 +24,13 @@
                 <div id="app" class="wrap supplycontent">
                     <div class="sub-wrap sub-wrap-shadow sub-wrap-color">
                         <div class="container">
-                            <div class="info" dyweb-initial="Aggr_Post('Action_HRGetBouns', 'CompanyCode', 'EmpID', 'Year', 'Lang')">
+                            <div class="info" dyweb-initial="Aggr_Post('Aggregate_EFP.GetBounsAndSalary', 'url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang')">
+                                <div style="display:none">
+                                    <div dyweb-model="number">{{bonus.CompanyCode}}</div>
+                                    <div dyweb-model="string">{{bonus.EmpID}}</div>
+                                    <div dyweb-model="number">{{bonus.Year}}</div>
+                                    <div dyweb-model="string">{{bonus.string}}</div>
+                                </div>
                                 <h2 class="title-header">玉山人園地 - 年終查詢</h2>
                                 <div class="contents">
                                     <p>
@@ -80,7 +86,7 @@
                                                         <th width="25%" class="colored-bg">應扣項目</th>
                                                         <th width="25%" class="colored-bg">金額</th>
                                                     </tr>
-                                                    <tr dyweb-model="object[]" v-for="item in bonus.ER">
+                                                    <tr dyweb-model="object[]" v-for="item in bonus.ERDD">
                                                         <td>{{item.ERName}}</td>
                                                         <td dyweb-vfor-model="number">{{item.ERSalary}}</td>
                                                         <td>{{item.DDName}}</td>
@@ -111,15 +117,9 @@
                                                 </tbody>
                                             </table>
                                             <h3 class="title" style="color: #99cc66;">備註</h3>
-                                            <li dyweb-model="object[]" v-for="item in bonus.Memo">
-                                                <a dyweb-vfor-model="string">{{item.SalaryItemCategoryIIIName}}</a>
-                                                <a dyweb-vfor-model="string">{{item.SalaryItemRemark}}</a>
-                                                <a dyweb-vfor-model="string">{{item.Remark}}</a>
-                                            </li>
                                             <span id="MainContent_lb_BonusRemark"></span><table class="table-notice">
                                                 <tbody>
-                                                    <tr><th style="color:#99cc66;">※</th><td>特別獎金：表彰你對玉山的特別貢獻，謹致謝忱。</td></tr>
-                                                    <tr><th style="color:#99cc66">※</th><td>獎金補充保費：全年累計超過健保投保金額4倍部分的獎金扣繳2.11%。</td></tr>
+                                                    <tr dyweb-model="string[]" v-for="item in bonus.Remark" ><th style="color:#99cc66;">※</th><td>{{item}}</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
