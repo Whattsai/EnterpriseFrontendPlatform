@@ -14,9 +14,9 @@ namespace HR.Model
 
         public string JobTitle { get; set; }
 
-        public string BackAccount1 { get; set; }
+        public string BankAccount1 { get; set; }
 
-        public string BackAccount2 { get; set; }
+        public string BankAccount2 { get; set; }
 
         public List<ERDDDetail> ERDD { get; set; } = new List<ERDDDetail>();
 

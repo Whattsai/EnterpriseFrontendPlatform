@@ -240,7 +240,7 @@ public static class DyWebConvert
             file.WriteLine("if (perameters[i].includes('url:')) {");
             file.WriteLine("const paramInfo = perameters[i].replace(\"url: \", \"\").split(':');");
             file.WriteLine("const urlParams = new URLSearchParams(window.location.search);");
-            file.WriteLine("const paramValue = urlParams.get(paramInfo[0]);");
+            file.WriteLine("const paramValue = urlParams.get(paramInfo[1]);");
             file.WriteLine("jsonstring += '\"' + paramInfo[1] + '\":\"' + paramValue + '\"';");
             file.WriteLine("} else {");
             file.WriteLine($"const key = perameters[i] as keyof {mainDataClassName.FirstCharToUpper()};");
@@ -436,6 +436,12 @@ public static class DyWebConvert
                     GetVforItem(out vforItemName, out vforItemValue, item);
                     AnalyticalNode(item, dataClassInfos, vforItemName, vforItemValue);
                 }
+                else if (type == TSClassType.StringArray.Description())
+                {
+                    classHierarchy = item.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                    AnalyticalNode(item, dataClassInfos);
+                }
                 else
                 {
                     AnalyticalNode(item, dataClassInfos);
@@ -459,6 +465,12 @@ public static class DyWebConvert
                             AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
                             continue;
                         }
+                    }
+                    else if (type == TSClassType.StringArray.Description())
+                    {
+                        classHierarchy = item.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                        AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                        continue;
                     }
 
                     //處理<option>標記裡的v-for 細項
