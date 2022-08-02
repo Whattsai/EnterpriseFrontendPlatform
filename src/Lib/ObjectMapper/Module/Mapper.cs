@@ -243,7 +243,6 @@ namespace SJ.ObjectMapper.Module
                 var hierarchyList = stringHierarchy.Split('.');
                 foreach (var h in hierarchyList)
                 {
-                    var aaa = inModelData.GetType().Name;
                     if (inModelData.GetType().Name != "JsonElement" && inModelData == null)
                     {
                         return inModelData;
