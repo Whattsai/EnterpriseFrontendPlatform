@@ -3,7 +3,6 @@ using HR.Model;
 using SJ.Convert;
 using SJ.ObjectMapper.Module;
 using System.Collections.Concurrent;
-using System.Text.Json;
 
 namespace HR.Moudule
 {
