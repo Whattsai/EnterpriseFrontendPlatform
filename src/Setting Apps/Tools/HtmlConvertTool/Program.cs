@@ -58,33 +58,15 @@ public static class DyWebConvert
     {
         Queue<AggrPostInfo> InitialData = new Queue<AggrPostInfo>();
 
-        AggrPostInfo dywebInitial = new AggrPostInfo();
+        AggrPostInfo dywebInitialInfo = GetAggrPostParameterByAttribute(node, $"dyweb-initial");
 
-        string[] perameter = GetAttributeValueAndReplactAggrPostTag(node, $"dyweb-initial");
-
-        dywebInitial.ExecuteKey = perameter[0];
-
-        for (int j = 1; j < perameter.Length; j++)
-        {
-            dywebInitial.Perameter.Add(perameter[j]);
-        }
-
-        InitialData.Enqueue(dywebInitial);
+        InitialData.Enqueue(dywebInitialInfo);
 
         foreach (var selectInitialNode in node.SelectNodes($".//*[@dyweb-selectinitial]"))
         {
-            AggrPostInfo dywebInitial2 = new AggrPostInfo();
+            AggrPostInfo selectinitialInfo = GetAggrPostParameterByAttribute(selectInitialNode, $"dyweb-selectinitial");
 
-            string[] perameter2 = GetAttributeValueAndReplactAggrPostTag(selectInitialNode, $"dyweb-selectinitial");
-
-            dywebInitial2.ExecuteKey = perameter2[0];
-
-            for (int j = 1; j < perameter2.Length; j++)
-            {
-                dywebInitial2.Perameter.Add(perameter2[j]);
-            }
-
-            InitialData.Enqueue(dywebInitial2);
+            InitialData.Enqueue(selectinitialInfo);
         }
 
         return InitialData;
@@ -167,7 +149,7 @@ public static class DyWebConvert
 
         foreach (var item in typeScriptClassInfo)
         {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(Path.Combine(AppSettings.OutputFilePath, $@"src\dataclass\{item.Key}.ts"), false))
+            using (StreamWriter file = new StreamWriter(Path.Combine(AppSettings.OutputFilePath, $@"src\dataclass\{item.Key}.ts"), false))
             {
                 foreach (var objectItem in item.Value.FindAll(o => o.PropertyInfo.Type == TSClassType.Object.Description() || o.PropertyInfo.Type == TSClassType.ObjectArray.Description()))
                 {
@@ -306,7 +288,7 @@ public static class DyWebConvert
             file.WriteLine(htmlDocument.DocumentNode.InnerHtml);
         }
     }
-
+ 
     /// <summary>
     /// 建立 App.Vue
     /// </summary>
@@ -353,6 +335,100 @@ public static class DyWebConvert
             file.WriteLine("</script>");
         }
 
+    }
+
+    /// <summary>
+    /// 遞迴解析 HtmlNode 產生 DataClass 資訊
+    /// </summary>
+    /// <param name="node">HtmlNode</param>
+    /// <param name="dataClassInfos">存放DataClassInfo</param>
+    /// <param name="vforItemName">vFor的item</param>
+    /// <param name="vforItemValue">item實際的值</param>
+    /// <returns></returns>
+    private static List<DataClass> AnalyticalNode(HtmlNode node, [Optional] List<DataClass> dataClassInfos, [Optional] string vforItemName, [Optional] string vforItemValue)
+    {
+        if (dataClassInfos == null)
+        {
+            dataClassInfos = new List<DataClass>();
+        }
+
+        string[] classHierarchy;
+        foreach (var item in node.ChildNodes)
+        {
+            string type = item.GetAttributeValue($"dyweb-model", "default");
+            if (item.InnerHtml.Contains("</"))
+            {
+                //處理<tr>標記裡的v-for
+                if (type == TSClassType.ObjectArray.Description())
+                {
+                    classHierarchy = GetVforClassHierarchy(item);
+                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                    GetVforItem(out vforItemName, out vforItemValue, item);
+                    AnalyticalNode(item, dataClassInfos, vforItemName, vforItemValue);
+
+                }
+                else if (type == TSClassType.StringArray.Description())
+                {
+                    classHierarchy = GetVforClassHierarchy(item);
+                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                    AnalyticalNode(item, dataClassInfos);
+                }
+                else
+                {
+                    AnalyticalNode(item, dataClassInfos);
+                }
+            }
+            else
+            {
+                if (item.InnerText.Contains("{{"))
+                {
+                    //處理<option>標記裡的v-for
+                    if (type == TSClassType.ObjectArray.Description())
+                    {
+                        classHierarchy = GetVforClassHierarchy(item);
+                        AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+
+                        type = item.GetAttributeValue($"dyweb-vfor-model", "string");
+                        GetVforItem(out vforItemName, out vforItemValue, item);
+                        if (vforItemName != null)
+                        {
+                            classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                            AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+
+                            if (!string.IsNullOrEmpty(item.GetAttributeValue($"v-bind:value", "default")))
+                            {
+                                classHierarchy = item.GetAttributeValue($"v-bind:value", "default").Replace(vforItemName, vforItemValue).Split(".");
+                                AnalyticalClassHierarchy(ref dataClassInfos, "string", classHierarchy);
+                            }
+                            continue;
+                        }
+                    }
+                    else if (type == TSClassType.StringArray.Description())
+                    {
+                        classHierarchy = GetVforClassHierarchy(item);
+                        AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                        continue;
+                    }
+
+                    //處理<option>標記裡的v-for 細項
+                    if (type == TSClassType.Default.Description())
+                    {
+                        if (vforItemName != null)
+                        {
+                            classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                            type = item.GetAttributeValue($"dyweb-vfor-model", "string");
+                            AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                            continue;
+                        }
+                    }
+
+                    classHierarchy = item.InnerText.Replace("{{", "").Replace("}}", "").Split(".");
+                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                }
+            }
+        }
+
+        return dataClassInfos;
     }
 
     /// <summary>
@@ -415,100 +491,6 @@ public static class DyWebConvert
         }
     }
 
-    /// <summary>
-    /// 解析 HtmlNode 產生 DataClass 資訊
-    /// </summary>
-    /// <param name="node">HtmlNode</param>
-    /// <param name="dataClassInfos">存放DataClassInfo</param>
-    /// <param name="vforItemName">vFor的item</param>
-    /// <param name="vforItemValue">item實際的值</param>
-    /// <returns></returns>
-    public static List<DataClass> AnalyticalNode(HtmlNode node, [Optional] List<DataClass> dataClassInfos, [Optional] string vforItemName, [Optional] string vforItemValue)
-    {
-        if (dataClassInfos == null)
-        {
-            dataClassInfos = new List<DataClass>();
-        }
-
-        string[] classHierarchy;
-        foreach (var item in node.ChildNodes)
-        {
-            string type = item.GetAttributeValue($"dyweb-model", "default");
-            if (item.InnerHtml.Contains("</"))
-            {
-                //處理<tr>標記裡的v-for
-                if (type == TSClassType.ObjectArray.Description())
-                {
-                    classHierarchy = item.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
-                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-                    GetVforItem(out vforItemName, out vforItemValue, item);
-                    AnalyticalNode(item, dataClassInfos, vforItemName, vforItemValue);
-
-                }
-                else if (type == TSClassType.StringArray.Description())
-                {
-                    classHierarchy = item.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
-                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-                    AnalyticalNode(item, dataClassInfos);
-                }
-                else
-                {
-                    AnalyticalNode(item, dataClassInfos);
-                }
-            }
-            else
-            {
-                if (item.InnerText.Contains("{{"))
-                {
-                    //處理<option>標記裡的v-for
-                    if (type == TSClassType.ObjectArray.Description())
-                    {
-                        classHierarchy = item.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
-                        AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-
-                        type = item.GetAttributeValue($"dyweb-vfor-model", "string");
-                        GetVforItem(out vforItemName, out vforItemValue, item);
-                        if (vforItemName != null)
-                        {
-                            classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
-                            AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-
-                            if (!string.IsNullOrEmpty(item.GetAttributeValue($"v-bind:value", "default")) )
-                            {
-                                classHierarchy = item.GetAttributeValue($"v-bind:value", "default").Replace(vforItemName, vforItemValue).Split(".");
-                                AnalyticalClassHierarchy(ref dataClassInfos, "string", classHierarchy);
-                            }
-                            continue;
-                        }
-                    }
-                    else if (type == TSClassType.StringArray.Description())
-                    {
-                        classHierarchy = item.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
-                        AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-                        continue;
-                    }
-
-                    //處理<option>標記裡的v-for 細項
-                    if (type == TSClassType.Default.Description())
-                    {
-                        if (vforItemName != null)
-                        {
-                            classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
-                            type = item.GetAttributeValue($"dyweb-vfor-model", "string");
-                            AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-                            continue;
-                        }
-                    }
-
-                    classHierarchy = item.InnerText.Replace("{{", "").Replace("}}", "").Split(".");
-                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-                }
-            }
-        }
-
-        return dataClassInfos;
-    }
-
    /// <summary>
    /// 取得 Vfor 的 itemName 名稱及值
    /// </summary>
@@ -533,8 +515,34 @@ public static class DyWebConvert
         }
     }
 
-    private static string[] GetAttributeValueAndReplactAggrPostTag(HtmlNode node, string attribute)
+    /// <summary>
+    /// 取得指定 AttributeValue 的 Aggr_Post 參數
+    /// </summary>
+    /// <param name="node"></param>
+    /// <param name="attribute"></param>
+    /// <returns></returns>
+    private static AggrPostInfo GetAggrPostParameterByAttribute(HtmlNode node, string attribute)
     {
-        return node.GetAttributeValue(attribute, "default").Replace("Aggr_Post(", "").Replace(")", "").Split(",");
+       var parameter = node.GetAttributeValue(attribute, "default").Replace("Aggr_Post(", "").Replace(")", "").Split(",");
+
+        AggrPostInfo dywebInitialAggrPostInfo = new AggrPostInfo();
+
+        dywebInitialAggrPostInfo.ExecuteKey = parameter[0];
+
+        for (int j = 1; j < parameter.Length; j++)
+        {
+            dywebInitialAggrPostInfo.Perameter.Add(parameter[j]);
+        }
+        return dywebInitialAggrPostInfo;
+    }
+
+    /// <summary>
+    /// 取得 VforAttributeValue 並回傳 Class 階層
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    private static string[] GetVforClassHierarchy(HtmlNode node)
+    {
+       return node.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
     }
 }
