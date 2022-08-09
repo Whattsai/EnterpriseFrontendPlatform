@@ -46,5 +46,18 @@ namespace Action.API.Controllers
 
             return  Content(JsonSerializer.Serialize(new StateModel(true, ans)), "application/json", Encoding.UTF8);
         }
+
+        [HttpPost("Build")]
+        public bool Build(Dictionary<string, dynamic> stateDatas)
+        {
+            foreach (var data in stateDatas)
+            {
+                Task.Run(()=> _daprClient.SaveStateAsync("statestore", data.Key, data.Value, new StateOptions() { Consistency = ConsistencyMode.Strong })) ;
+            }
+
+            Task.WaitAll();
+
+            return true;
+        }
     }
 }

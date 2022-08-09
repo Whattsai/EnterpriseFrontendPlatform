@@ -46,7 +46,11 @@ namespace ManagementCollections.API.Controllers
                     ));
             }
 
-            await _daprClient.SaveStateAsync("statestore", actionID, actions, new StateOptions() { Consistency = ConsistencyMode.Strong });
+            //await _daprClient.SaveStateAsync("statestore", actionID, actions, new StateOptions() { Consistency = ConsistencyMode.Strong });
+
+            Dictionary<string, List<ActionModel>> request = new Dictionary<string, List<ActionModel>>();
+            request.Add(actionID, actions);
+            await _daprClient.InvokeMethodAsync<Dictionary<string, List<ActionModel>>, bool>(HttpMethod.Post, $"action", $"action/build", request);
 
             return actions;
         }

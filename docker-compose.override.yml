@@ -47,7 +47,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      - "5006:80"
+      - "5201:80"
   action.api-dapr:
     command: ["./daprd",
       "-app-id", "action",

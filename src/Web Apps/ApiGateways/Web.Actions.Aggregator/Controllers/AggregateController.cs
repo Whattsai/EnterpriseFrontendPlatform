@@ -43,7 +43,7 @@ namespace Web.Actions.Aggregator.Controllers
 
             if (aggregateSetting == null)
             {
-                aggregateSetting = await _daprClient.InvokeMethodAsync<SortedDictionary<string, List<string>>>(HttpMethod.Get, "managementapi", $"aggregatesetting/build?aggregateID={ request.ID }");
+                aggregateSetting = await _daprClient.InvokeMethodAsync<SortedDictionary<string, List<string>>>(HttpMethod.Get, $"{request.Service}maintainservice", $"aggregatesetting/build?aggregateID={ request.ID }");
             }
 
             // 初始化AggregateModule
@@ -66,6 +66,19 @@ namespace Web.Actions.Aggregator.Controllers
             }
 
             return Ok(new Mapper().GetTreeMapResult(jsonstring, inmodel, new Dictionary<string, object>()));
+        }
+
+        [HttpPost("Build")]
+        public bool Build(Dictionary<string, SortedDictionary<string, List<string>>> stateDatas)
+        {
+            foreach(var data in stateDatas)
+            {
+                Task.Run(()=> _daprClient.SaveStateAsync("statestore", data.Key, data.Value, new StateOptions() { Consistency = ConsistencyMode.Strong })) ;
+            }
+
+            Task.WaitAll();
+
+            return true;
         }
     }
 }
