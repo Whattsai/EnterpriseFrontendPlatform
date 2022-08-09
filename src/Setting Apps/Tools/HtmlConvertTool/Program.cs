@@ -288,7 +288,7 @@ public static class DyWebConvert
             file.WriteLine(htmlDocument.DocumentNode.InnerHtml);
         }
     }
- 
+
     /// <summary>
     /// 建立 App.Vue
     /// </summary>
@@ -355,27 +355,27 @@ public static class DyWebConvert
         string[] classHierarchy;
         foreach (var item in node.ChildNodes)
         {
-            string type = item.GetAttributeValue($"dyweb-model", "default");
+            TSClassType type = Extension.GetValueFromDescription<TSClassType>(item.GetAttributeValue($"dyweb-model", "default"));
+
+            //處理<tr>標記裡的v-for
             if (item.InnerHtml.Contains("</"))
             {
-                //處理<tr>標記裡的v-for
-                if (type == TSClassType.ObjectArray.Description())
+                switch (type)
                 {
-                    classHierarchy = GetVforClassHierarchy(item);
-                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-                    GetVforItem(out vforItemName, out vforItemValue, item);
-                    AnalyticalNode(item, dataClassInfos, vforItemName, vforItemValue);
-
-                }
-                else if (type == TSClassType.StringArray.Description())
-                {
-                    classHierarchy = GetVforClassHierarchy(item);
-                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-                    AnalyticalNode(item, dataClassInfos);
-                }
-                else
-                {
-                    AnalyticalNode(item, dataClassInfos);
+                    case TSClassType.ObjectArray:
+                        classHierarchy = GetVforClassHierarchy(item);
+                        AnalyticalClassHierarchy(ref dataClassInfos, ref type, classHierarchy);
+                        GetVforItem(out vforItemName, out vforItemValue, item);
+                        AnalyticalNode(item, dataClassInfos, vforItemName, vforItemValue);
+                        break;
+                    case TSClassType.StringArray:
+                        classHierarchy = GetVforClassHierarchy(item);
+                        AnalyticalClassHierarchy(ref dataClassInfos, ref type, classHierarchy);
+                        AnalyticalNode(item, dataClassInfos);
+                        break;
+                    default:
+                        AnalyticalNode(item, dataClassInfos);
+                        break;
                 }
             }
             else
@@ -383,47 +383,48 @@ public static class DyWebConvert
                 if (item.InnerText.Contains("{{"))
                 {
                     //處理<option>標記裡的v-for
-                    if (type == TSClassType.ObjectArray.Description())
+
+                    switch (type)
                     {
-                        classHierarchy = GetVforClassHierarchy(item);
-                        AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-
-                        type = item.GetAttributeValue($"dyweb-vfor-model", "string");
-                        GetVforItem(out vforItemName, out vforItemValue, item);
-                        if (vforItemName != null)
-                        {
-                            classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
-                            AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-
-                            if (!string.IsNullOrEmpty(item.GetAttributeValue($"v-bind:value", "default")))
+                        case TSClassType.ObjectArray:
+                            classHierarchy = GetVforClassHierarchy(item);
+                            AnalyticalClassHierarchy(ref dataClassInfos, ref type, classHierarchy);
+                            type = Extension.GetValueFromDescription<TSClassType>(item.GetAttributeValue($"dyweb-vfor-model", "string"));
+                            GetVforItem(out vforItemName, out vforItemValue, item);
+                            if (vforItemName != null)
                             {
-                                classHierarchy = item.GetAttributeValue($"v-bind:value", "default").Replace(vforItemName, vforItemValue).Split(".");
-                                AnalyticalClassHierarchy(ref dataClassInfos, "string", classHierarchy);
-                            }
-                            continue;
-                        }
-                    }
-                    else if (type == TSClassType.StringArray.Description())
-                    {
-                        classHierarchy = GetVforClassHierarchy(item);
-                        AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
-                        continue;
-                    }
+                                classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                                AnalyticalClassHierarchy(ref dataClassInfos, ref type, classHierarchy);
 
-                    //處理<option>標記裡的v-for 細項
-                    if (type == TSClassType.Default.Description())
-                    {
-                        if (vforItemName != null)
-                        {
-                            classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
-                            type = item.GetAttributeValue($"dyweb-vfor-model", "string");
-                            AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                                if (!string.IsNullOrEmpty(item.GetAttributeValue($"v-bind:value", "default")))
+                                {
+                                    classHierarchy = item.GetAttributeValue($"v-bind:value", "default").Replace(vforItemName, vforItemValue).Split(".");
+                                    type = TSClassType.String;
+                                    AnalyticalClassHierarchy(ref dataClassInfos, ref type, classHierarchy);
+                                }
+                                continue;
+                            }
+                            break;
+                        case TSClassType.StringArray:
+                            classHierarchy = GetVforClassHierarchy(item);
+                            AnalyticalClassHierarchy(ref dataClassInfos, ref type, classHierarchy);
                             continue;
-                        }
+                        //處理<option>標記裡的v-for 細項
+                        case TSClassType.Default:
+                            if (vforItemName != null)
+                            {
+                                classHierarchy = item.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
+                                type = Extension.GetValueFromDescription<TSClassType>(item.GetAttributeValue($"dyweb-vfor-model", "string"));
+                                AnalyticalClassHierarchy(ref dataClassInfos, ref type, classHierarchy);
+                                continue;
+                            }
+                            break;
+                        default:
+                            break;
                     }
 
                     classHierarchy = item.InnerText.Replace("{{", "").Replace("}}", "").Split(".");
-                    AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
+                    AnalyticalClassHierarchy(ref dataClassInfos, ref type, classHierarchy);
                 }
             }
         }
@@ -437,14 +438,14 @@ public static class DyWebConvert
     /// <param name="dataClassInfos"></param>
     /// <param name="stringType"></param>
     /// <param name="levelArray"></param>
-    private static void AnalyticalClassHierarchy(ref List<DataClass> dataClassInfos, string stringType, string[] levelArray)
+    private static void AnalyticalClassHierarchy(ref List<DataClass> dataClassInfos, ref TSClassType type, string[] levelArray)
     {
         int objectLevel = levelArray.Length;
         while (objectLevel >= 2)
         {
             DataClass dataclass = new DataClass();
 
-            dataclass.PropertyInfo.Type = stringType;
+            dataclass.PropertyInfo.Type = type.Description();
 
             dataclass.PropertyInfo.Name = levelArray[objectLevel - 1];
 
@@ -457,7 +458,7 @@ public static class DyWebConvert
 
             objectLevel -= 1;
 
-            stringType = TSClassType.Object.Description();
+            type = TSClassType.Object;
         }
     }
 
@@ -491,12 +492,12 @@ public static class DyWebConvert
         }
     }
 
-   /// <summary>
-   /// 取得 Vfor 的 itemName 名稱及值
-   /// </summary>
-   /// <param name="vforItemName"></param>
-   /// <param name="vforItemValue"></param>
-   /// <param name="item"></param>
+    /// <summary>
+    /// 取得 Vfor 的 itemName 名稱及值
+    /// </summary>
+    /// <param name="vforItemName"></param>
+    /// <param name="vforItemValue"></param>
+    /// <param name="item"></param>
     private static void GetVforItem(out string vforItemName, out string vforItemValue, HtmlNode item)
     {
         vforItemName = item.GetAttributeValue($"v-for", "default").Split(" in ").FirstOrDefault().Trim();
@@ -523,7 +524,7 @@ public static class DyWebConvert
     /// <returns></returns>
     private static AggrPostInfo GetAggrPostParameterByAttribute(HtmlNode node, string attribute)
     {
-       var parameter = node.GetAttributeValue(attribute, "default").Replace("Aggr_Post(", "").Replace(")", "").Split(",");
+        var parameter = node.GetAttributeValue(attribute, "default").Replace("Aggr_Post(", "").Replace(")", "").Split(",");
 
         AggrPostInfo dywebInitialAggrPostInfo = new AggrPostInfo();
 
@@ -543,6 +544,6 @@ public static class DyWebConvert
     /// <returns></returns>
     private static string[] GetVforClassHierarchy(HtmlNode node)
     {
-       return node.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
+        return node.GetAttributeValue($"v-for", "default").Split(" in ").LastOrDefault().Replace("{{", "").Replace("}}", "").Trim().Split(".");
     }
 }
