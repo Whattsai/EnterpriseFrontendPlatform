@@ -19,7 +19,7 @@ namespace ActionEngine.DataClass.Model
             ConditionTree = tree;
         }
 
-        public string MapperKey { get; set; }
+        public string? MapperKey { get; set; }
 
         public TreeNode? ConditionTree { get; set; }
 
@@ -31,9 +31,9 @@ namespace ActionEngine.DataClass.Model
         /// <summary>
         /// Mapping完的物件
         /// </summary>
-        public Dictionary<string, object> OutModel { get; set; }
+        public Dictionary<string, object>? OutModel { get; set; }
 
-        public Dictionary<string, object> RequestModel { get; set; }
+        public Dictionary<string, object>? RequestModel { get; set; }
     }
 
 

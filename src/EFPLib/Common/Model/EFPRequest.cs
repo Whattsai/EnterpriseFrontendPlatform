@@ -21,6 +21,8 @@ namespace Common.Model
 
         public string ID { get; set; }
 
+        public string? Service { get;set; }
+
         [DataMember]
         public dynamic Data { get; set; }
     }

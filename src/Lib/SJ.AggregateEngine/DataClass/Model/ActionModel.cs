@@ -31,7 +31,7 @@ namespace ActionEngine.DataClass.Model
             this.FailMapperKey = failMapperKey;
         }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// 是否執行判斷式
