@@ -24,7 +24,7 @@
                 <div id="app" class="wrap supplycontent">
                     <div class="sub-wrap sub-wrap-shadow sub-wrap-color">
                         <div class="container">
-                            <div class="info" dyweb-initial="Aggr_Post('Aggregate_EFP.GetBonusAndSalary', 'url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang')">
+                            <div class="info" dyweb-initial="Aggr_Post('EFP_GetBonusAndSalary', 'url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang')">
                                 <div style="display:none">
                                     <div dyweb-model="number">{{bonus.CompanyCode}}</div>
                                     <div dyweb-model="string">{{bonus.EmpID}}</div>
@@ -35,12 +35,12 @@
                                 <div class="contents">
                                     <p>
                                         現況服務部門:
-                                        <span id="MainContent_lblEMP_Department" v-on:click="Aggr_Post('Aggregate_EFP.GetBonusAndSalary', 'url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang')" dyweb-model="string">{{bonus.Department}}</span>
+                                        <span id="MainContent_lblEMP_Department" v-on:click="Aggr_Post('EFP_GetBonusAndSalary', 'url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang')" dyweb-model="string">{{bonus.Department}}</span>
                                     </p>
                                     <div dyweb-model="string">{{bonus.Selected}}</div>
                                     <p>
                                         發薪單位：
-                                        <select v-model="bonus.Selected" style="width:300px;" dyweb-watch="bonus.Selected, Aggr_Post('Aggregate_EFP.GetBonusAndSalary', 'url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang')" dyweb-selectinitial="Aggr_Post('Aggregate_EFP.GetBonusCompany','url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang'))">
+                                        <select v-model="bonus.Selected" style="width:300px;" dyweb-watch="bonus.Selected, Aggr_Post('EFP_GetBonusAndSalary', 'url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang')" dyweb-selectinitial="Aggr_Post('Aggregate_EFP.GetBonusCompany','url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang'))">
                                             <option dyweb-model="object[]" v-for="item in bonus.CompanyInfo" v-bind:value="item.CompanyTypeCode" v-bind:key="item.CompanyTypeCode" dyweb-vfor-model="number">{{item.CompanyTypeName}}</option>
                                         </select>
                                     </p>
