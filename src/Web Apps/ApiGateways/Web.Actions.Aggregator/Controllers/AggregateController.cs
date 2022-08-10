@@ -17,18 +17,9 @@ namespace Web.Actions.Aggregator.Controllers
     {
         private readonly DaprClient _daprClient;
 
-        private Dictionary<string, MapperWay> _IMapper { get; set; }
-
-        private delegate object MapperWay(ConcurrentDictionary<string, StateModel> stateModel, EFPRequest request);
-
         public AggregateController(DaprClient daprClient)
         {
             _daprClient = daprClient;
-
-            _IMapper = new Dictionary<string, MapperWay>()
-            {
-                {"EFP_GetBonusAndSalary", new MapperWay(baResponseMapper) }
-            };
         }
 
         [HttpPost("GO")]
@@ -54,9 +45,6 @@ namespace Web.Actions.Aggregator.Controllers
             {
                 return Ok(Task.Run(() => baResponseMapper(aggregateModule.MapStateModel, request)).Result);
             }
-
-            //StreamReader r = new StreamReader($"settingdata/mapper/{request.ID}.json");
-            //string jsonstring = r.ReadToEnd();
 
             Dictionary<string, object> inmodel = new Dictionary<string, object>();
             foreach (var item in aggregateModule.MapStateModel)
