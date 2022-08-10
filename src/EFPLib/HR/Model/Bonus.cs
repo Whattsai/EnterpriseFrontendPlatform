@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HR.Model
 {
-    public class Bouns
+    public class Bonus
     {
         public string? Year { get; set; }
         public string? BonusType { get; set; }

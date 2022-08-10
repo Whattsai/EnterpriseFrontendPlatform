@@ -12,7 +12,7 @@ namespace HR.Moudule
 
         public GetBounsAndSalaryResponse Go(ConcurrentDictionary<string, StateModel> statModel)
         {
-            List<Bouns>? bounsDatas = _mapper.GetDataHierarchy<List<Bouns>>("Action_HRGetBonus.ResponseData.ReturnData", statModel);
+            List<Bonus>? bounsDatas = _mapper.GetDataHierarchy<List<Bonus>>("Action_HRGetBonus.ResponseData.ReturnData", statModel);
             List<AnnualSalary>? salaryData = _mapper.GetDataHierarchy<List<AnnualSalary>>("Action_HRGetAnnualSalary.ResponseData.ReturnData", statModel);
 
             var erList = bounsDatas?.FindAll(c => c.PlusorMinus == "ER");

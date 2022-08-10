@@ -2,7 +2,6 @@
 using Aggregate.Module;
 using Common.Model;
 using Dapr.Client;
-using HR.Moudule;
 using Microsoft.AspNetCore.Mvc;
 using SJ.ObjectMapper.Module;
 using System.Collections.Concurrent;
@@ -20,7 +19,7 @@ namespace Web.Actions.Aggregator.Controllers
 
         private Dictionary<string, MapperWay> _IMapper { get; set; }
 
-        private delegate object MapperWay(ConcurrentDictionary<string, StateModel> stateModel);
+        private delegate object MapperWay(ConcurrentDictionary<string, StateModel> stateModel, EFPRequest request);
 
         public AggregateController(DaprClient daprClient)
         {
@@ -28,7 +27,7 @@ namespace Web.Actions.Aggregator.Controllers
 
             _IMapper = new Dictionary<string, MapperWay>()
             {
-                {"Aggregate_EFP.GetBonusAndSalary", new MapperWay(new GetBounsAndSalaryMapper().Go) }
+                {"AggregateEFPGetBonusAndSalary", new MapperWay(baResponseMapper) }
             };
         }
 
@@ -53,7 +52,7 @@ namespace Web.Actions.Aggregator.Controllers
             // 整理response，如客製字典內無對應，則使用預設mapper
             if (_IMapper.ContainsKey(request.ID))
             {
-                return Ok(new MapperWay(_IMapper[request.ID]).Invoke(aggregateModule.MapStateModel));
+                return Ok(Task.Run(() => baResponseMapper(aggregateModule.MapStateModel, request)).Result);
             }
 
             StreamReader r = new StreamReader($"settingdata/mapper/{request.ID}.json");
@@ -71,14 +70,25 @@ namespace Web.Actions.Aggregator.Controllers
         [HttpPost("Build")]
         public bool Build(Dictionary<string, SortedDictionary<string, List<string>>> stateDatas)
         {
-            foreach(var data in stateDatas)
+            foreach (var data in stateDatas)
             {
-                Task.Run(()=> _daprClient.SaveStateAsync("statestore", data.Key, data.Value, new StateOptions() { Consistency = ConsistencyMode.Strong })) ;
+                Task.Run(() => _daprClient.SaveStateAsync("statestore", data.Key, data.Value, new StateOptions() { Consistency = ConsistencyMode.Strong }));
             }
 
             Task.WaitAll();
 
             return true;
+        }
+
+        /// <summary>
+        /// 使用BA撰寫的客製轉置邏輯(透過dapr呼叫BA Service)
+        /// </summary>
+        /// <param name="stateModel"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private async Task<object> baResponseMapper(ConcurrentDictionary<string, StateModel> stateModel, EFPRequest request)
+        {
+            return await _daprClient.InvokeMethodAsync<ConcurrentDictionary<string, StateModel>, object>(HttpMethod.Post, $"{request.Service}moduleservice", $"{request.ID}/responsemapper", stateModel);
         }
     }
 }
