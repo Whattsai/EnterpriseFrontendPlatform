@@ -27,7 +27,7 @@ namespace Web.Actions.Aggregator.Controllers
 
             _IMapper = new Dictionary<string, MapperWay>()
             {
-                {"AggregateEFPGetBonusAndSalary", new MapperWay(baResponseMapper) }
+                {"EFP_GetBonusAndSalary", new MapperWay(baResponseMapper) }
             };
         }
 
@@ -38,25 +38,25 @@ namespace Web.Actions.Aggregator.Controllers
             request.Token = new Guid();
 
             // 取得參數
-            var aggregateSetting = await _daprClient.GetStateAsync<SortedDictionary<string, List<string>>>("statestore", request.ID);
+            var info = await _daprClient.GetStateAsync<AggregateInfo>("statestore", request.ID);
 
-            if (aggregateSetting == null)
+            if (info == null)
             {
-                aggregateSetting = await _daprClient.InvokeMethodAsync<SortedDictionary<string, List<string>>>(HttpMethod.Get, $"{request.Service}maintainservice", $"aggregatesetting/build?aggregateID={ request.ID }");
+                info = await _daprClient.InvokeMethodAsync<AggregateInfo>(HttpMethod.Get, $"{request.Service}maintainservice", $"aggregatesetting/build?aggregateID={ request.ID }");
             }
 
             // 初始化AggregateModule
-            AggregateModule aggregateModule = new AggregateModule(aggregateSetting, _daprClient, request);
+            AggregateModule aggregateModule = new AggregateModule(info.ActionsControl, _daprClient, request);
             Task.Run(() => aggregateModule.Go()).Wait();
 
             // 整理response，如客製字典內無對應，則使用預設mapper
-            if (_IMapper.ContainsKey(request.ID))
+            if (string.IsNullOrEmpty(info.ResponseMapperJson))
             {
                 return Ok(Task.Run(() => baResponseMapper(aggregateModule.MapStateModel, request)).Result);
             }
 
-            StreamReader r = new StreamReader($"settingdata/mapper/{request.ID}.json");
-            string jsonstring = r.ReadToEnd();
+            //StreamReader r = new StreamReader($"settingdata/mapper/{request.ID}.json");
+            //string jsonstring = r.ReadToEnd();
 
             Dictionary<string, object> inmodel = new Dictionary<string, object>();
             foreach (var item in aggregateModule.MapStateModel)
@@ -64,19 +64,13 @@ namespace Web.Actions.Aggregator.Controllers
                 inmodel.Add(item.Key, item.Value);
             }
 
-            return Ok(new Mapper().GetTreeMapResult(jsonstring, inmodel, new Dictionary<string, object>()));
+            return Ok(new Mapper().GetTreeMapResult(info.ResponseMapperJson, inmodel, new Dictionary<string, object>()));
         }
 
         [HttpPost("Build")]
-        public bool Build(Dictionary<string, SortedDictionary<string, List<string>>> stateDatas)
+        public bool Build(AggregateInfo info)
         {
-            foreach (var data in stateDatas)
-            {
-                Task.Run(() => _daprClient.SaveStateAsync("statestore", data.Key, data.Value, new StateOptions() { Consistency = ConsistencyMode.Strong }));
-            }
-
-            Task.WaitAll();
-
+            Task.Run(() => _daprClient.SaveStateAsync("statestore", $"{info.ID}", info, new StateOptions() { Consistency = ConsistencyMode.Strong })).Wait();
             return true;
         }
 
@@ -89,6 +83,15 @@ namespace Web.Actions.Aggregator.Controllers
         private async Task<object> baResponseMapper(ConcurrentDictionary<string, StateModel> stateModel, EFPRequest request)
         {
             return await _daprClient.InvokeMethodAsync<ConcurrentDictionary<string, StateModel>, object>(HttpMethod.Post, $"{request.Service}moduleservice", $"{request.ID}/responsemapper", stateModel);
+        }
+
+        public class AggregateInfo
+        {
+            public string ID { get; set; }
+
+            public SortedDictionary<string, List<string>> ActionsControl { get; set; }
+
+            public string? ResponseMapperJson { get; set; }
         }
     }
 }
