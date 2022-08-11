@@ -40,7 +40,7 @@
                                     <div dyweb-model="string">{{bonus.Selected}}</div>
                                     <p>
                                         發薪單位：
-                                        <select v-model="bonus.Selected" style="width:300px;" dyweb-watch="bonus.Selected, Aggr_Post('hr', 'EFP_GetBonusAndSalary', 'url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang')" dyweb-selectinitial="Aggr_Post('hr', 'Aggregate_EFP.GetBonusCompany','url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang'))">
+                                        <select v-model="bonus.Selected" style="width:300px;" dyweb-watch="bonus.Selected, Aggr_Post('hr', 'EFP_GetBonusAndSalary', 'url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang')" dyweb-selectinitial="Aggr_Post('hr', 'EFP_GetBonusCompany','url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang'))">
                                             <option dyweb-model="object[]" v-for="item in bonus.CompanyInfo" v-bind:value="item.CompanyTypeCode" v-bind:key="item.CompanyTypeCode" dyweb-vfor-model="number">{{item.CompanyTypeName}}</option>
                                         </select>
                                     </p>
