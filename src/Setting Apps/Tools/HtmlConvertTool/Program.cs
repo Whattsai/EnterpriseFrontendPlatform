@@ -219,7 +219,7 @@ public static class DyWebConvert
             file.WriteLine("");
 
             /** Aggr_Post */
-            file.WriteLine("const Aggr_Post = (executeKey: string, ...perameters: string[]) => {");
+            file.WriteLine("const Aggr_Post = (serviceName:string, executeKey: string, ...perameters: string[]) => {");
             file.WriteLine("var jsonstring = \"{ \";");
             file.WriteLine("for (var i = 0; i < perameters.length; i++) {");
             file.WriteLine("if (i > 0) { jsonstring += ',' }");
@@ -238,7 +238,7 @@ public static class DyWebConvert
             file.WriteLine(" const multiJson = classToPlain(jsonData);");
             file.WriteLine($" plainToClassFromExist({mainDataClassName.FirstCharTolower()}, multiJson);");
             file.WriteLine(" }");
-            file.WriteLine(" const postRequest = { ID: executeKey, Data: postData }");
+            file.WriteLine(" const postRequest = {Service: serviceName, ID: executeKey, Data: postData }");
             file.WriteLine(" axios.post('http://localhost:5002/Aggregate/Go', postRequest)");
             file.WriteLine($" .then((response) => automapp(response.data));");
             file.WriteLine("}");
