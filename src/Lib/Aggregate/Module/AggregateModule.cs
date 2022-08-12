@@ -125,6 +125,10 @@ namespace Aggregate.Module
             {
                 foreach (var nodeKey in nextAction.Value)
                 {
+                    if (!MapPreAction.ContainsKey(nodeKey))
+                    {
+                        throw new Exception($"The '{nodeKey}' node is not present in the aggregate settings");
+                    }
                     MapPreAction[nodeKey].Add(nextAction.Key);
                 }
             }

@@ -108,8 +108,8 @@ services:
     #networks:
     #  - efp-dapr
 
-  dynamicwebsite:
-    image: dynamicwebsite
-    build:
-      context: ./webapp
-      dockerfile: Dockerfile
+  #dynamicwebsite:
+  #  image: dynamicwebsite
+  #  build:
+  #    context: ./webapp
+  #    dockerfile: Dockerfile
