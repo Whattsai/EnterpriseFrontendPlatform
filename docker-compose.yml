@@ -108,8 +108,5 @@ services:
     #networks:
     #  - efp-dapr
 
-  #dynamicwebsite:
-  #  image: dynamicwebsite
-  #  build:
-  #    context: ./webapp
-  #    dockerfile: Dockerfile
+  webstatus:
+    image: xabarilcoding/healthchecksui:5.0.0

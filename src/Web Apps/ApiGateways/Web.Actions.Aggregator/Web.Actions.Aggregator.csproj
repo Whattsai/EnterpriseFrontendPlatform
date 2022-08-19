@@ -10,12 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.5" />
     <PackageReference Include="Dapr.AspNetCore" Version="1.7.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.43.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.43.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.7" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <ProjectReference Include="..\..\..\Lib\EFPCommon\Aggregate\Aggregate.csproj" />
+    <ProjectReference Include="..\..\..\Lib\EFPCommon\Healthchecks\Healthchecks.csproj" />
     <ProjectReference Include="..\..\..\Lib\EFPCommon\SJ.ActionEngine\SJ.ActionEngine.csproj" />
 	<Protobuf Include="..\..\Protos\wheather.proto" GrpcServices="Client" />
   </ItemGroup>
