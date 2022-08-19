@@ -16,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\EFPLib\Common\Common.csproj" />
-    <ProjectReference Include="..\ObjectMapper\SJ.ObjectMapper.csproj" />
-    <ProjectReference Include="..\SJConvert\SJ.Convert.csproj" />
+    <ProjectReference Include="..\..\Utilities\ObjectMapper\SJ.ObjectMapper.csproj" />
+    <ProjectReference Include="..\..\Utilities\SJConvert\SJ.Convert.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 
 </Project>

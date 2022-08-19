@@ -17,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\EFPLib\Common\Common.csproj" />
-    <ProjectReference Include="..\..\Lib\SJ.AggregateEngine\SJ.ActionEngine.csproj" />
+    <ProjectReference Include="..\..\Lib\EFPCommon\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Lib\EFPCommon\SJ.ActionEngine\SJ.ActionEngine.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

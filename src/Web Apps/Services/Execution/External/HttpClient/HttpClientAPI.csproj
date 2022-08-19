@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\EFPLib\Common\Common.csproj" />
-    <ProjectReference Include="..\..\..\..\..\Lib\SJConvert\SJ.Convert.csproj" />
+    <ProjectReference Include="..\..\..\..\..\Lib\EFPCommon\Common\Common.csproj" />
+    <ProjectReference Include="..\..\..\..\..\Lib\Utilities\SJConvert\SJ.Convert.csproj" />
   </ItemGroup>
 
 </Project>
