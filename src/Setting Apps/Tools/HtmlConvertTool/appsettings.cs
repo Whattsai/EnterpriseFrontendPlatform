@@ -4,5 +4,3 @@
 
 	public static string OutputFilePath { get; set; }
 }
-
-
