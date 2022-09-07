@@ -13,7 +13,7 @@ variables:
   dockerRegistryServiceConnection: '2722c58a-3f9d-4dfa-ac92-4128b96a9508'
   imageRepository: 'whattsaienterprisefrontendplatform'
   containerRegistry: 'efpregistry.azurecr.io'
-  dockerfilePath: '$(Build.SourcesDirectory)/src/Setting Apps/ManagementCollections.API/Dockerfile'
+  dockerfilePath: '$(Build.SourcesDirectory)'
   tag: '$(Build.BuildId)'
 
   # Agent VM image name
@@ -32,8 +32,63 @@ stages:
       displayName: Build and push an image to container registry
       inputs:
         command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
+        repository: efpmanagementapi
+        buildContext: '.'
+        dockerfile: $(dockerfilePath)/src/Setting Apps/ManagementCollections.API/Dockerfile
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'buildAndPush'
+        repository: efpaggregateapi
+        buildContext: '.'
+        Dockerfile: '$(dockerfilePath)/src/Web Apps/ApiGateways/Web.Actions.Aggregator/Dockerfile'
+        tags: '$(tag)'
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'buildAndPush'
+        repository: efpaggregateapi
+        buildContext: '.'
+        Dockerfile: '$(dockerfilePath)/src/Web Apps/ApiGateways/Web.Actions.Aggregator/Dockerfile'
+        tags: '$(tag)'
+        
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'buildAndPush'
+        repository: actionapi
+        buildContext: '.'
+        Dockerfile: '$(dockerfilePath)/src/Web Apps/Services/Action.API/Dockerfile'
+        tags: '$(tag)'
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'buildAndPush'
+        repository: executionhttpclient
+        buildContext: '.'
+        Dockerfile: '$(dockerfilePath)/src/Web Apps/Services/Execution/External/HttpClient/Dockerfile'
+        tags: '$(tag)'
+    
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'buildAndPush'
+        repository: executionruleapi
+        buildContext: '.'
+        Dockerfile: '$(dockerfilePath)/src/Web Apps/Services/Execution/Logic/RuleCollections.API/Dockerfile'
+        tags: '$(tag)'
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        command: 'buildAndPush'
+        repository: hrtest
+        buildContext: '.'
+        Dockerfile: '$(dockerfilePath)/src/Web Apps/Test/HR/Dockerfile'
+        tags: '$(tag)'
