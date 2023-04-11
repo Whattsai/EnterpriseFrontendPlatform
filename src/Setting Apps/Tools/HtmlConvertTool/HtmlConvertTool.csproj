@@ -29,10 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="appsettings.cs">
+    <Compile Update="DataClass\AppSettings.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>appsettings.json</DependentUpon>
     </Compile>
   </ItemGroup>
 
