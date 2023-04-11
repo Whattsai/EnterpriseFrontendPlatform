@@ -113,9 +113,12 @@ services:
     ports:
       - "6001:80"
 
-  dynamicwebsite:
+  webstatus:
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - HealthChecksUI__HealthChecks__0__Name=ManagementCollections.API
+      - HealthChecksUI__HealthChecks__0__Uri=http://managementcollections.api/hc
+      - HealthChecksUI__HealthChecks__1__Name=Web.Actions.Aggregator
+      - HealthChecksUI__HealthChecks__1__Uri=http://web.actions.aggregator/hc
     ports:
-      - "8080:8080"
-    volumes:
-       - ./webapp:/app
-       - /app/node_modules
+      - "5107:80"

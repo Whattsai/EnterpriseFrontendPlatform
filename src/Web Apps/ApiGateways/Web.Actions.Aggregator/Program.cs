@@ -1,3 +1,7 @@
+using Healthchecks.Dapr;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Newtonsoft.Json.Serialization;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
@@ -32,6 +36,10 @@ builder.Services.AddControllers()
     ;
 builder.Services.AddDaprClient();
 builder.Services.AddHttpClient();
+builder.Services
+    .AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy())
+    .AddCheck<DaprHealthCheck>("dapr");
 
 builder.Services.AddCors(options =>
 {
@@ -49,5 +57,18 @@ var app = builder.Build();
 app.UseAuthorization();
 app.MapControllers();
 app.UseCors(allowSpecificOrigins);
+app.MapHealthChecks("/hc", new HealthCheckOptions()
+{
+    Predicate = _ => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+app.MapHealthChecks("/apphc", new HealthCheckOptions
+{
+    Predicate = r => r.Name.Contains("self")
+});
+app.MapHealthChecks("/daprhc", new HealthCheckOptions
+{
+    Predicate = r => r.Name.Contains("dapr")
+});
 
 app.Run();

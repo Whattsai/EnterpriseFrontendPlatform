@@ -17,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Lib\Aggregate\Aggregate.csproj" />
-    <ProjectReference Include="..\..\..\Lib\SJ.AggregateEngine\SJ.ActionEngine.csproj" />
+    <ProjectReference Include="..\..\..\Lib\EFPCommon\Aggregate\Aggregate.csproj" />
+    <ProjectReference Include="..\..\..\Lib\EFPCommon\SJ.ActionEngine\SJ.ActionEngine.csproj" />
   </ItemGroup>
 
 </Project>

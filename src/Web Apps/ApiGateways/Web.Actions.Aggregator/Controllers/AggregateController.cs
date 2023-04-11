@@ -70,7 +70,7 @@ namespace Web.Actions.Aggregator.Controllers
         /// <returns></returns>
         private async Task<object> baResponseMapper(ConcurrentDictionary<string, StateModel> stateModel, EFPRequest request)
         {
-            return await _daprClient.InvokeMethodAsync<ConcurrentDictionary<string, StateModel>, object>(HttpMethod.Post, $"{request.Service}moduleservice", $"{request.ID}/responsemapper", stateModel);
+            return await _daprClient.InvokeMethodAsync<ConcurrentDictionary<string, StateModel>, object>(HttpMethod.Post, $"{request.Service}businessservice", $"{request.ID}/responsemapper", stateModel);
         }
 
         public class AggregateInfo
