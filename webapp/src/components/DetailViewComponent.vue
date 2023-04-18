@@ -1,10 +1,10 @@
 <template>
 
-                                <div dyweb-model="string">{{secondModel.Selected}}</div>
-                                <select v-model="secondModel.Selected" style="width:300px;" dyweb-watch="secondModel.Selected,Aggr_Post('C','Title')" dyweb-selectinitial="Aggr_Post('selectinitial','selectinitial','Title'))">
-                                    <option dyweb-model="object[]" v-for="item in secondModel.CompaniesB" :value="item.ID" :key="item.ID" dyweb-vfor-model="string">{{item.Name}}</option>
-                                </select>
-                            
+                            <div dy-model="string">{{secondModel.Selected}}</div>
+                            <select v-model="secondModel.Selected" style="width:300px;" dy-watch="secondModel.Selected,Aggr_Post('C','Title')" dy-selectinitial="Aggr_Post('selectinitial','Title'))">
+                                <option dy-model="object[]" v-for="item in secondModel.CompaniesB" :value="item.ID" :key="item.ID" dy-vfor-model="string">{{item.Title}}</option>
+                            </select>
+                        
 </template>
 <script lang='ts'>
 import { watch, reactive, defineComponent } from 'vue';
@@ -49,9 +49,9 @@ var postData = JSON.parse(jsonstring);
  .then((response) => automapp(response.data));
 }
 
-Aggr_Post('hr','bgKey', 'url:CompanyID:CompanyID',  'url:ID:ID')
+Aggr_Post('DetailViewComponent','bgKey', 'url:CompanyID:CompanyID',  'url:ID:ID')
 
-Aggr_Post('selectinitial','selectinitial', 'Title')
+Aggr_Post('selectinitial','Title')
 
 
 return { secondModel, Aggr_Post }

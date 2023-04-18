@@ -1,39 +1,5 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>
-        e-HR 玉山人園地
-    </title>
-    <!-- Site styles -->
-    <link href="style.css" rel="stylesheet" type="text/css">
-    <link href="YearEndBonusesreset.css" rel="stylesheet" type="text/css">
-    <link href="YearEndBonusesstyle.css" rel="stylesheet" type="text/css">
-    <!-- ::End styles:: -->
+<template>
 
-    <title>e-HR 玉山人園地 - 年終查詢</title>
-    <!-- Site styles -->
-    <!-- ::End styles:: -->
-</head>
-<body>
-    <form method="post" action="https://ehr.esunbank.com.tw/EHR/YearEndBonuses/YearEndBonus_PS.aspx" id="ctl01">
-        <div id="app">
-            <section class="content-wrapper main-content clear-fix">
-                <div dy-view="'MainView'" class="wrap supplycontent">
-                    <div dy-detailview="'DetailView'">
-                        <div>AAA</div>
-                        <div class="info" dy-component="'DetailViewComponent',Aggr_Post('bgKey','url:CompanyID:CompanyID', 'url:ID:ID')">
-                            <div dy-model="string">{{secondModel.Selected}}</div>
-                            <select v-model="secondModel.Selected" style="width:300px;" dy-watch="secondModel.Selected,Aggr_Post('C','Title')" dy-selectinitial="Aggr_Post('selectinitial','Title'))">
-                                <option dy-model="object[]" v-for="item in secondModel.CompaniesB" :value="item.ID" :key="item.ID" dy-vfor-model="string">{{item.Title}}</option>
-                            </select>
-                        </div>
-                    </div>
-
-                            <div class="sub-wrap sub-wrap-shadow sub-wrap-color">
-                                <div class="container">
-                                    <div class="info" dy-component="'YearEndBonusesComponent', Aggr_Post('hr', 'EFP_GetBonusAndSalary', 'url:CompanyCode:CompanyCode', 'url:EmpID:EmpID', 'url:Year:Year', 'url:Lang:Lang')">
                                         <div style="display:none">
                                             <div dy-model="number">{{bonus.CompanyCode}}</div>
                                             <div dy-model="string">{{bonus.EmpID}}</div>
@@ -168,33 +134,59 @@
                                         </div>
 
 
-                                    </div>
+                                    
+</template>
+<script lang='ts'>
+import { watch, reactive, defineComponent } from 'vue';
+import 'reflect-metadata';
+import 'es6-shim';
+import { classToPlain, deserialize, plainToClassFromExist } from 'class-transformer';
+import axios from 'axios';
+import {Bonus} from '../dataclass/Bonus';
+import {CompanyInfo} from '../dataclass/CompanyInfo';
+import {ERDD} from '../dataclass/ERDD';
+import {AnnualSalary} from '../dataclass/AnnualSalary';
 
-                                    <div class="info" dy-component="'OtherComponent', Aggr_Post('bgKey','url:CompanyID:CompanyID', 'url:ID:ID')">
-                                        <div dy-model="string">{{secondModel.Selected}}</div>
-                                        <select v-model="secondModel.Selected" style="width:300px;" dy-watch="secondModel.Selected,Aggr_Post('C','Title')" dy-selectinitial="Aggr_Post('selectinitial','Title'))">
-                                            <option dy-model="object[]" v-for="item in secondModel.CompaniesB" :value="item.ID" :key="item.ID" dy-vfor-model="string">{{item.Name}}</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- End page content -->
-                        <!-- Begin footer -->
-                        <div class="footer">
-                            <div class="container">
+export default defineComponent ({
+setup() {
 
-                                <h2>玉山銀行人力資源處服務專線</h2>
-                                <h4 style="font-weight:100;font-size:22px;">(02)2175-1313分機8701</h4>
-                                <br>
+const bonus = reactive(new Bonus());
 
-                                <a href="http://www.esunbank.com.tw/" style="font-weight:600;font-family:Microsoft JhengHei, eudc">玉山銀行  </a>
-                                <a href="https://ehrd.esunbank.com.tw/eHRD/" style="font-weight:100;font-size:22px;">  E-learning  </a>
-                                <span class="copyright">Copyright © 2015 E.SUN Commercial Bank, Ltd. All Rights Reserved.</span>
-                            </div>
-                        </div>
-</section>
-        </div>
-    </form>
-</body>
-</html>
+watch(() =>bonus.Selected, (newValue, oldValue) => {
+Aggr_Post( 'hr', 'EFP_GetBonusAndSalary',  'url:CompanyCode:CompanyCode',  'url:EmpID:EmpID',  'url:Year:Year',  'url:Lang:Lang')
+});
+
+
+const Aggr_Post = (serviceName:string, executeKey: string, ...perameters: string[]) => {
+var jsonstring = "{ ";
+for (var i = 0; i < perameters.length; i++) {
+if (i > 0) { jsonstring += ',' }
+if (perameters[i].includes('url:')) {
+const paramInfo = perameters[i].replace("url: ", "").split(':');
+const urlParams = new URLSearchParams(window.location.search);
+const paramValue = urlParams.get(paramInfo[1]);
+jsonstring += '"' + paramInfo[1] + '":"' + paramValue + '"';
+} else {
+const key = perameters[i] as keyof Bonus;
+jsonstring += '"' + perameters[i] + '":"' + bonus[key] + '"';
+}}
+jsonstring += "} ";
+var postData = JSON.parse(jsonstring);
+ const automapp = (jsonData: any) => {
+ const multiJson = classToPlain(jsonData);
+ plainToClassFromExist(bonus, multiJson);
+ }
+ const postRequest = {Service: serviceName, ID: executeKey, Data: postData }
+ axios.post('http://localhost:5002/Aggregate/Go', postRequest)
+ .then((response) => automapp(response.data));
+}
+
+Aggr_Post('YearEndBonusesComponent','hr',  'EFP_GetBonusAndSalary',  'url:CompanyCode:CompanyCode',  'url:EmpID:EmpID',  'url:Year:Year',  'url:Lang:Lang')
+
+Aggr_Post('hr', 'EFP_GetBonusCompany', 'url:CompanyCode:CompanyCode',  'url:EmpID:EmpID',  'url:Year:Year',  'url:Lang:Lang')
+
+
+return { bonus, Aggr_Post }
+}
+})
+</script>

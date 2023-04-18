@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using HtmlConvertTool.DataClass;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace HtmlConvertTool
@@ -22,43 +23,62 @@ namespace HtmlConvertTool
         /// </summary>
         public void ExecuteConvert()
         {
-            //取得 dyweb-initial 底下所有 Node
-            HtmlNodeCollection htmlNodeCollection = _doc.DocumentNode.SelectNodes($"//*[@dyweb-initial]");
+            //取得 dy-component 底下所有 Node
+            HtmlNodeCollection htmlNodeCollection = _doc.DocumentNode.SelectNodes($"//*[@dy-component]");
 
             foreach (var node in htmlNodeCollection)
             {
-                //DetailVue  檔名
-                string fileName = GetVueName(node);
+                ComponentInfo componentInfo = new ComponentInfo();
 
-                //產生DataClass.ts
-                var dataClassNames = CreateDataClassInfo(node, out var mainDataClassName);
+                //ComponentVue 檔名
+                componentInfo.Name = GetComponentName(node);
 
-                //產生InitialData
-                var initialInfoQueue = CreateInitialData(node);
+                //建立DataClass.ts & 準備DataClassName
+                componentInfo.DataClassNames = CreateDataClassInfo(node, out var mainDataClassName);
+                componentInfo.MainDataClassName = mainDataClassName;
 
-                //產生watchData
-                var watchInfo = CreateWatchData(node);
+                //準備InitialData
+                componentInfo.InitialInfo = CreateInitialData(node);
 
-                //產生 Detail Vue 檔
-                CreateDetailVue(node, fileName);
+                //準備watchData
+                componentInfo.WatchInfo = CreateWatchData(node);
 
-                //產生Detail Vue檔的Ts內容
-                AppendTypeScriptToVue(fileName, dataClassNames, initialInfoQueue, watchInfo, mainDataClassName);
+                //建立ComponentVue檔案
+                CreateComponentVue(node, componentInfo);
             }
 
-            //產生index.html檔 & App.Vue
-            DyWebConvert.CreateIndex(_doc);
+            //產生index.html檔 & App.Vue & View.vue
+            CreateRouterTs(_doc.DocumentNode);
+            CreateAppVue();
+            CreateViewVue(_doc.DocumentNode);
+            CreateIndex(_doc);
         }
 
-        private static string GetVueName(HtmlNode node)
+        private static string GetComponentName(HtmlNode node)
         {
-            string nodeString = node.GetAttributeValue($"dyweb-initial", "default");
+            string nodeString = node.GetAttributeValue($"dy-component", "default");
+
+            return nodeString.Split(",")[0].Replace("'", "");
+        }
+
+        private static string GetViewName(HtmlNode node)
+        {
+            var viewNode = node.SelectSingleNode($"//*[@dy-view]");
+            string nodeString = viewNode.GetAttributeValue($"dy-view", "default");
+
+            return nodeString.Split(",")[0].Replace("'", "");
+        }
+
+        private static string GetDetailViewName(HtmlNode node)
+        {
+            var viewNode = node.SelectSingleNode($"//*[@dy-detailview]");
+            string nodeString = viewNode.GetAttributeValue($"dy-detailview", "default");
 
             return nodeString.Split(",")[0].Replace("'", "");
         }
 
         /// <summary>
-        /// 準備 dyweb-initial、dyweb-selectinitial 觸發方法的資料
+        /// 準備 dy-component、dy-selectinitial 觸發方法的資料
         /// </summary>
         /// <param name="node">HtmlNode</param>
         /// <returns></returns>
@@ -66,13 +86,13 @@ namespace HtmlConvertTool
         {
             Queue<AggrPostInfo> InitialData = new Queue<AggrPostInfo>();
 
-            AggrPostInfo dywebInitialInfo = GetAggrPostParameterByAttribute(node, $"dyweb-initial");
+            AggrPostInfo dyInitialInfo = GetAggrPostParameterByAttribute(node, $"dy-component");
 
-            InitialData.Enqueue(dywebInitialInfo);
+            InitialData.Enqueue(dyInitialInfo);
 
-            foreach (var selectInitialNode in node.SelectNodes($".//*[@dyweb-selectinitial]"))
+            foreach (var selectInitialNode in node.SelectNodes($".//*[@dy-selectinitial]"))
             {
-                AggrPostInfo selectinitialInfo = GetAggrPostParameterByAttribute(selectInitialNode, $"dyweb-selectinitial");
+                AggrPostInfo selectinitialInfo = GetAggrPostParameterByAttribute(selectInitialNode, $"dy-selectinitial");
 
                 InitialData.Enqueue(selectinitialInfo);
             }
@@ -89,13 +109,13 @@ namespace HtmlConvertTool
         {
             Dictionary<string, AggrPostInfo> watchData = new Dictionary<string, AggrPostInfo>();
 
-            var htmlNodes = node.SelectNodes($".//*[@dyweb-watch]");
+            var htmlNodes = node.SelectNodes($".//*[@dy-watch]");
 
             foreach (var item in htmlNodes)
             {
-                AggrPostInfo dywebInitial = new AggrPostInfo();
+                AggrPostInfo dyInitial = new AggrPostInfo();
 
-                string nodeString = item.GetAttributeValue($"dyweb-watch", "default");
+                string nodeString = item.GetAttributeValue($"dy-watch", "default");
 
                 string key = nodeString.Split(",")[0];
 
@@ -103,34 +123,17 @@ namespace HtmlConvertTool
 
                 string[] perameter = aggrPostString.Replace("Aggr_Post(", "").Replace(")", "").Split(",");
 
-                dywebInitial.ExecuteKey = perameter[0];
+                dyInitial.ExecuteKey = perameter[0];
 
                 for (int i = 1; i < perameter.Length; i++)
                 {
-                    dywebInitial.Perameter.Add(perameter[i]);
+                    dyInitial.Perameter.Add(perameter[i]);
                 }
 
-                watchData.Add(key, dywebInitial);
+                watchData.Add(key, dyInitial);
             }
 
             return watchData;
-        }
-
-        /// <summary>
-        /// 初始化 DetailVue 檔案
-        /// </summary>
-        /// <param name="htmlDocument"></param>
-        private static void CreateDetailVue(HtmlNode node, string fileName)
-        {
-            CreateFolderIfNotExist($@"src\components\");
-
-            using (StreamWriter file = new StreamWriter(Path.Combine(AppSettings.OutputFilePath, $@"src\components\{fileName}.vue"), false))
-            {
-                file.WriteLine("<template>");
-                file.WriteLine(node.InnerHtml);
-                file.WriteLine("</template>");
-            }
-
         }
 
         /// <summary>
@@ -138,7 +141,7 @@ namespace HtmlConvertTool
         /// </summary>
         /// <param name="node"></param>
         /// <param name="mainDataClassName"></param>
-        /// <returns></returns>
+        /// <returns>DataClassName</returns>
         private static List<string> CreateDataClassInfo(HtmlNode node, out string mainDataClassName)
         {
 
@@ -147,7 +150,7 @@ namespace HtmlConvertTool
             CreateFolderIfNotExist($@"src\dataclass\");
 
             //參數最前面加【.】才會限縮在子階層內
-            //var htmlNodes = node.SelectNodes($".//*[@dyweb-model]");
+            //var htmlNodes = node.SelectNodes($".//*[@dy-model]");
 
             //產出DataClass檔
             Dictionary<string, List<DataClassInfo>> typeScriptClassInfo = dataClassInfos.GroupBy(o => o.ParentClassName).ToDictionary(o => o.Key, o => o.ToList());
@@ -176,24 +179,30 @@ namespace HtmlConvertTool
         }
 
         /// <summary>
-        /// 附加 TypeScript 程式碼至 DetailVue 檔案
+        /// 建立 Component Vue 檔案
         /// </summary>
         /// <param name="vueName"></param>
         /// <param name="initialInfos"></param>
         /// <param name="watchData"></param>
         /// <param name="dataClasses"></param>
         /// <param name="mainDataClassName"></param>
-        private static void AppendTypeScriptToVue(string vueName, List<string> dataClasses, Queue<AggrPostInfo> initialInfoQueue, Dictionary<string, AggrPostInfo> watchData, string mainDataClassName)
+        private static void CreateComponentVue(HtmlNode node, ComponentInfo componentInfo)
         {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(Path.Combine(AppSettings.OutputFilePath, $@"src\components\{vueName}.vue"), true))
+            CreateFolderIfNotExist($@"src\components\");
+
+            using (StreamWriter file = new StreamWriter(Path.Combine(AppSettings.OutputFilePath, $@"src\components\{componentInfo.Name}.vue"), false))
             {
+                file.WriteLine("<template>");
+                file.WriteLine(node.InnerHtml);
+                file.WriteLine("</template>");
+
                 file.WriteLine("<script lang='ts'>");
                 file.WriteLine("import { watch, reactive, defineComponent } from 'vue';");
                 file.WriteLine("import 'reflect-metadata';");
                 file.WriteLine("import 'es6-shim';");
                 file.WriteLine("import { classToPlain, deserialize, plainToClassFromExist } from 'class-transformer';");
                 file.WriteLine("import axios from 'axios';");
-                foreach (var item in dataClasses)
+                foreach (var item in componentInfo.DataClassNames)
                 {
                     file.WriteLine($"import {{{ item }}} from '../dataclass/{item}';");
                 }
@@ -205,12 +214,12 @@ namespace HtmlConvertTool
 
                 file.WriteLine("");
 
-                file.WriteLine($"const {mainDataClassName.FirstCharTolower()} = reactive(new {mainDataClassName.FirstCharToUpper()}());");
+                file.WriteLine($"const {componentInfo.MainDataClassName.FirstCharTolower()} = reactive(new {componentInfo.MainDataClassName.FirstCharToUpper()}());");
 
                 file.WriteLine("");
 
-                /** dyweb-Watch */
-                foreach (var item in watchData)
+                /** dy-Watch */
+                foreach (var item in componentInfo.WatchInfo)
                 {
                     string postPeram = String.Join(", ", item.Value.Perameter);
                     file.WriteLine($"watch(() =>{item.Key}, (newValue, oldValue) => {{");
@@ -233,14 +242,14 @@ namespace HtmlConvertTool
                 file.WriteLine("const paramValue = urlParams.get(paramInfo[1]);");
                 file.WriteLine("jsonstring += '\"' + paramInfo[1] + '\":\"' + paramValue + '\"';");
                 file.WriteLine("} else {");
-                file.WriteLine($"const key = perameters[i] as keyof {mainDataClassName.FirstCharToUpper()};");
-                file.WriteLine($"jsonstring += '\"' + perameters[i] + '\":\"' + {mainDataClassName.FirstCharTolower()}[key] + '\"';");
+                file.WriteLine($"const key = perameters[i] as keyof {componentInfo.MainDataClassName.FirstCharToUpper()};");
+                file.WriteLine($"jsonstring += '\"' + perameters[i] + '\":\"' + {componentInfo.MainDataClassName.FirstCharTolower()}[key] + '\"';");
                 file.WriteLine("}}");
                 file.WriteLine("jsonstring += \"} \";");
                 file.WriteLine("var postData = JSON.parse(jsonstring);");
                 file.WriteLine(" const automapp = (jsonData: any) => {");
                 file.WriteLine(" const multiJson = classToPlain(jsonData);");
-                file.WriteLine($" plainToClassFromExist({mainDataClassName.FirstCharTolower()}, multiJson);");
+                file.WriteLine($" plainToClassFromExist({componentInfo.MainDataClassName.FirstCharTolower()}, multiJson);");
                 file.WriteLine(" }");
                 file.WriteLine(" const postRequest = {Service: serviceName, ID: executeKey, Data: postData }");
                 file.WriteLine($" axios.post('{AppSettings.AxiosPost}', postRequest)");
@@ -249,21 +258,19 @@ namespace HtmlConvertTool
 
                 file.WriteLine("");
 
-                /** dyweb-Initial & SelectInitial */
-                while (initialInfoQueue.Any())
+                /** dy-component & SelectInitial */
+                while (componentInfo.InitialInfo.Any())
                 {
-                    AggrPostInfo initialInfo = initialInfoQueue.Dequeue();
+                    AggrPostInfo initialInfo = componentInfo.InitialInfo.Dequeue();
                     string postPerameter = String.Join(", ", initialInfo.Perameter);
                     file.WriteLine($"Aggr_Post({initialInfo.ExecuteKey},{postPerameter})");
                     file.WriteLine("");
                 }
 
-
-
                 file.WriteLine("");
 
                 /** returm */
-                file.WriteLine($"return {{ {mainDataClassName.FirstCharTolower()}, Aggr_Post }}");
+                file.WriteLine($"return {{ {componentInfo.MainDataClassName.FirstCharTolower()}, Aggr_Post }}");
                 file.WriteLine("}");
                 file.WriteLine("})");
 
@@ -281,8 +288,6 @@ namespace HtmlConvertTool
 
             var htmlNode = htmlDocument.GetElementbyId("app");
 
-            CreateAppVue(htmlNode);
-
             htmlNode.InnerHtml = "";
 
             using (StreamWriter file = new StreamWriter(Path.Combine(AppSettings.OutputFilePath, $@"public\index.html"), false))
@@ -292,51 +297,186 @@ namespace HtmlConvertTool
         }
 
         /// <summary>
-        /// 建立 App.Vue
+        /// 建立 View.Vue
         /// </summary>
         /// <param name="htmlNode"></param>
         /// <param name="attributeName"></param>oooooo
-        private static void CreateAppVue(HtmlNode htmlNode)
+        private static void CreateViewVue(HtmlNode htmlNode)
         {
-            List<string> detailVueNameList = new List<string>();
+            List<string> componentNameList = new List<string>();
+            List<string> detailViewNameList = new List<string>();
 
-            //取得每個dyweb-initial節點
-            var htmlNodes = htmlNode.SelectNodes($"//*[@{"dyweb-initial"}]");
+            CreateFolderIfNotExist(@"src\views\");
 
-            foreach (var node in htmlNodes)
+            //取得每個dy-view
+            var viewNode = htmlNode.SelectSingleNode($"//*[@dy-view]");
+
+            var detailViewNodes = viewNode.SelectNodes($"//*[@dy-view=\"'{GetViewName(viewNode)}'\"]//@dy-detailview");
+
+            if (detailViewNodes.Any())
             {
-                detailVueNameList.Add($"{GetVueName(node)}");
-                HtmlNode newChild = HtmlNode.CreateNode($"<{GetVueName(node)} />");
-                node.ParentNode.ReplaceChild(newChild, node);
+                foreach (var detailViewNode in detailViewNodes)
+                {
+                    string detailViewPath = Path.Combine(AppSettings.OutputFilePath, $@"src\views\{GetDetailViewName(detailViewNode)}.vue");
+
+                    var deatilViewComponentNodes = viewNode.SelectNodes($"//*[@dy-detailview=\"'{GetDetailViewName(detailViewNode)}'\"]//@dy-component");
+
+                    if (deatilViewComponentNodes != null)
+                    {
+                        foreach (var node in deatilViewComponentNodes)
+                        {
+                            componentNameList.Add($"{GetComponentName(node)}");
+                            HtmlNode newChild3 = HtmlNode.CreateNode($"<{GetComponentName(node)} />");
+                            node.ParentNode.ReplaceChild(newChild3, node);
+                        }
+                    }
+                    using (StreamWriter file = new StreamWriter(detailViewPath, false))
+                    {
+                        file.WriteLine("<template>");
+                        file.WriteLine(detailViewNode.InnerHtml);
+                        file.WriteLine("</template>");
+                        file.WriteLine("<script lang='ts'>");
+                        file.WriteLine("import { defineComponent } from 'vue';");
+
+                        foreach (var item in componentNameList)
+                        {
+                            file.WriteLine($"import {item} from './components/{item}.vue';");
+                        }
+
+                        file.WriteLine("export default defineComponent({");
+                        file.WriteLine("name: 'App',");
+                        file.WriteLine("components: {");
+
+                        foreach (var item in componentNameList)
+                        {
+                            file.WriteLine($"\"{ item}\": {item},");
+                        }
+
+                        file.WriteLine(" },");
+                        file.WriteLine("})");
+                        file.WriteLine("</script>");
+                    }
+
+                    //除去主view裡的DetailView內容
+                    HtmlNode newChild2 = HtmlNode.CreateNode($"<{GetDetailViewName(detailViewNode)} />");
+                    viewNode.ReplaceChild(newChild2, detailViewNode);
+
+                }
             }
 
-            using (StreamWriter file = new StreamWriter(Path.Combine(AppSettings.OutputFilePath, $@"src\App.vue"), false))
+            var componentNodes = viewNode.SelectNodes($"//*[@dy-component]");
+
+            string path = Path.Combine(AppSettings.OutputFilePath, $@"src\views\{GetViewName(viewNode)}.vue");
+
+            if (componentNodes != null)
+            {
+                foreach (var node in componentNodes)
+                {
+                    componentNameList.Add($"{GetComponentName(node)}");
+                    HtmlNode newChild = HtmlNode.CreateNode($"<{GetComponentName(node)} />");
+                    node.ParentNode.ReplaceChild(newChild, node);
+                }
+
+                using (StreamWriter file = new StreamWriter(path, false))
+                {
+                    file.WriteLine("<template>");
+                    file.WriteLine(viewNode.InnerHtml);
+                    file.WriteLine("</template>");
+                    file.WriteLine("<script lang='ts'>");
+                    file.WriteLine("import { defineComponent } from 'vue';");
+
+                    foreach (var item in componentNameList)
+                    {
+                        file.WriteLine($"import {item} from './components/{item}.vue';");
+                    }
+
+                    file.WriteLine("export default defineComponent({");
+                    file.WriteLine("name: 'App',");
+                    file.WriteLine("components: {");
+
+                    foreach (var item in componentNameList)
+                    {
+                        file.WriteLine($"\"{ item}\": {item},");
+                    }
+
+                    file.WriteLine(" },");
+                    file.WriteLine("})");
+                    file.WriteLine("</script>");
+                }
+            }
+
+
+        }
+
+        /// <summary>
+        /// 建立 App.Vue
+        /// </summary>
+        private static void CreateAppVue()
+        {
+            string path = Path.Combine(AppSettings.OutputFilePath, $@"src\App.vue");
+
+            using (StreamWriter file = new StreamWriter(path, false))
             {
                 file.WriteLine("<template>");
-                file.WriteLine(htmlNode.InnerHtml);
+                file.WriteLine("<router-view/>");
                 file.WriteLine("</template>");
-                file.WriteLine("<script lang='ts'>");
-                file.WriteLine("import { defineComponent } from 'vue';");
-
-                foreach (var item in detailVueNameList)
-                {
-                    file.WriteLine($"import {item} from './components/{item}.vue';");
-                }
-
-                file.WriteLine("export default defineComponent({");
-                file.WriteLine("name: 'App',");
-                file.WriteLine("components: {");
-
-                foreach (var item in detailVueNameList)
-                {
-                    file.WriteLine($"\"{ item}\": {item},");
-                }
-
-                file.WriteLine(" },");
-                file.WriteLine("})");
-                file.WriteLine("</script>");
             }
+        }
 
+        /// <summary>
+        /// 建立 App.Vue
+        /// </summary>
+        private static void CreateRouterTs(HtmlNode htmlNode)
+        {
+            string path = Path.Combine(AppSettings.OutputFilePath, $@"src\router\index.ts");
+
+            CreateFolderIfNotExist(path);
+
+            var viewNode = htmlNode.SelectSingleNode($"//*[@dy-view]");
+
+            var detailViewNodes = viewNode.SelectNodes($"//*[@dy-view=\"'{GetViewName(viewNode)}'\"]//@dy-detailview");
+
+
+
+            using (StreamWriter file = new StreamWriter(path, false))
+            {
+                file.WriteLine("import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';");
+                file.WriteLine($"import {GetViewName(viewNode)} from '../views/{GetViewName(viewNode)}.vue';");
+
+                foreach (var node in detailViewNodes)
+                {
+                    file.WriteLine($"import {GetDetailViewName(node)} from '../views/{GetDetailViewName(node)}.vue';");
+                }
+
+                file.WriteLine("import NotFound from '../views/NotFound.vue';");
+                file.WriteLine("import axios from 'axios';");
+                file.WriteLine("");
+                file.WriteLine("const routes: Array<RouteRecordRaw> = [");
+                file.WriteLine("{");
+                file.WriteLine("path: '/',");
+                file.WriteLine($"name: '{GetViewName(viewNode)}',");
+                file.WriteLine($"component: () => import('../views/{GetViewName(viewNode)}.vue'),");
+
+                file.WriteLine("children:[");
+                foreach (var node in detailViewNodes)
+                {
+                    file.WriteLine("{name: '"+$"{GetDetailViewName(node)}"+ "',path: '" + $"{GetDetailViewName(node)}" + "',component: " + $"{GetDetailViewName(node)}" + ",},");
+                }
+                file.WriteLine("],");
+
+                file.WriteLine("},");
+                file.WriteLine("{");
+                file.WriteLine("path: '/:pathMatch(.*)*',");
+                file.WriteLine("name: 'NotFound',");
+                file.WriteLine("component: NotFound,");
+                file.WriteLine("},");
+                file.WriteLine("]");
+                file.WriteLine("const router = createRouter({");
+                file.WriteLine("history: createWebHistory(process.env.BASE_URL),");
+                file.WriteLine("routes");
+                file.WriteLine("})");
+                file.WriteLine("export default router");
+            }
         }
 
         /// <summary>
@@ -357,7 +497,7 @@ namespace HtmlConvertTool
             string[] classHierarchy;
             foreach (var detailNode in node.ChildNodes)
             {
-                TSClassType type = Extension.GetValueFromDescription<TSClassType>(detailNode.GetAttributeValue($"dyweb-model", "default"));
+                TSClassType type = Extension.GetValueFromDescription<TSClassType>(detailNode.GetAttributeValue($"dy-model", "default"));
 
                 //處理<tr>標記裡的v-for
                 if (detailNode.InnerHtml.Contains("</"))
@@ -388,7 +528,7 @@ namespace HtmlConvertTool
                         {
                             case TSClassType.ObjectArray:
                                 AnalyticalClassHierarchy(ref dataClassInfos, type, GetVforClassHierarchy(detailNode));
-                                type = Extension.GetValueFromDescription<TSClassType>(detailNode.GetAttributeValue($"dyweb-vfor-model", "string"));
+                                type = Extension.GetValueFromDescription<TSClassType>(detailNode.GetAttributeValue($"dy-vfor-model", "string"));
                                 GetVforItem(out vforItemName, out vforItemValue, detailNode);
                                 if (vforItemName != null)
                                 {
@@ -412,7 +552,7 @@ namespace HtmlConvertTool
                                 if (vforItemName != null)
                                 {
                                     classHierarchy = detailNode.InnerText.Replace(vforItemName, vforItemValue).Replace("{{", "").Replace("}}", "").Trim().Split(".");
-                                    type = Extension.GetValueFromDescription<TSClassType>(detailNode.GetAttributeValue($"dyweb-vfor-model", "string"));
+                                    type = Extension.GetValueFromDescription<TSClassType>(detailNode.GetAttributeValue($"dy-vfor-model", "string"));
                                     AnalyticalClassHierarchy(ref dataClassInfos, type, classHierarchy);
                                     continue;
                                 }
@@ -508,9 +648,9 @@ namespace HtmlConvertTool
         /// <param name="path"></param>
         private static void CreateFolderIfNotExist(string path)
         {
-            if (!Directory.Exists(Path.Combine(AppSettings.OutputFilePath, path)))
+            if (!Directory.Exists(Path.GetDirectoryName(Path.Combine(AppSettings.OutputFilePath, path))))
             {
-                Directory.CreateDirectory(Path.Combine(AppSettings.OutputFilePath, path));
+                Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(AppSettings.OutputFilePath, path)));
             }
         }
 
@@ -524,15 +664,15 @@ namespace HtmlConvertTool
         {
             var parameter = node.GetAttributeValue(attribute, "default").Replace("Aggr_Post(", "").Replace(")", "").Split(",");
 
-            AggrPostInfo dywebInitialAggrPostInfo = new AggrPostInfo();
+            AggrPostInfo dyInitialAggrPostInfo = new AggrPostInfo();
 
-            dywebInitialAggrPostInfo.ExecuteKey = parameter[0];
+            dyInitialAggrPostInfo.ExecuteKey = parameter[0];
 
             for (int j = 1; j < parameter.Length; j++)
             {
-                dywebInitialAggrPostInfo.Perameter.Add(parameter[j]);
+                dyInitialAggrPostInfo.Perameter.Add(parameter[j]);
             }
-            return dywebInitialAggrPostInfo;
+            return dyInitialAggrPostInfo;
         }
 
         /// <summary>
