@@ -1,6 +1,6 @@
 <template>
 
-                    <detailview></detailview>
+                    <router-view></router-view>
 
                             <div class="sub-wrap sub-wrap-shadow sub-wrap-color">
                                 <div class="container">

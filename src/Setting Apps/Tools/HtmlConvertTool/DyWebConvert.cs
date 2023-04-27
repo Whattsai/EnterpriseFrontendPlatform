@@ -26,31 +26,37 @@ namespace HtmlConvertTool
             //取得 dy-component 底下所有 Node
             HtmlNodeCollection htmlNodeCollection = _doc.DocumentNode.SelectNodes($"//*[@dy-component]");
 
-            foreach (var node in htmlNodeCollection)
+            if (htmlNodeCollection != null)
             {
-                ComponentInfo componentInfo = new ComponentInfo();
+                foreach (var node in htmlNodeCollection)
+                {
+                    ComponentInfo componentInfo = new ComponentInfo();
 
-                //ComponentVue 檔名
-                componentInfo.Name = GetComponentName(node);
+                    //ComponentVue 檔名
+                    componentInfo.Name = GetComponentName(node);
 
-                //建立DataClass.ts & 準備DataClassName
-                componentInfo.DataClassNames = CreateDataClassInfo(node, out var mainDataClassName);
-                componentInfo.MainDataClassName = mainDataClassName;
+                    //建立DataClass.ts & 準備DataClassName
+                    componentInfo.DataClassNames = CreateDataClassInfo(node, out var mainDataClassName);
+                    componentInfo.MainDataClassName = mainDataClassName;
 
-                //準備InitialData
-                componentInfo.InitialInfo = CreateInitialData(node);
+                    //準備InitialData
+                    componentInfo.InitialInfo = CreateInitialData(node);
 
-                //準備watchData
-                componentInfo.WatchInfo = CreateWatchData(node);
+                    //準備watchData
+                    componentInfo.WatchInfo = CreateWatchData(node);
 
-                //建立ComponentVue檔案
-                CreateComponentVue(node, componentInfo);
+                    //建立ComponentVue檔案
+                    CreateComponentVue(node, componentInfo);
+                }
             }
 
-            //產生index.html檔 & App.Vue & View.vue
+            //產生Router/index.ts
             CreateRouterTs(_doc.DocumentNode);
+            //產生App.vue
             CreateAppVue();
+            //產生 View.vue
             CreateViewVue(_doc.DocumentNode);
+            //產生index.html
             CreateIndex(_doc);
         }
 
@@ -71,9 +77,8 @@ namespace HtmlConvertTool
 
         private static string GetDetailViewName(HtmlNode node)
         {
-            var viewNode = node.SelectSingleNode($"//*[@dy-detailview]");
-            string nodeString = viewNode.GetAttributeValue($"dy-detailview", "default");
-
+            //var viewNode = node.SelectSingleNode($"//*[@dy-detailview]");
+            string nodeString = node.GetAttributeValue($"dy-detailview", "default");
             return nodeString.Split(",")[0].Replace("'", "");
         }
 
@@ -161,7 +166,7 @@ namespace HtmlConvertTool
                 {
                     foreach (var objectItem in item.Value.FindAll(o => o.PropertyInfo.Type == TSClassType.Object.Description() || o.PropertyInfo.Type == TSClassType.ObjectArray.Description()))
                     {
-                        file.WriteLine($"import {{ {objectItem.PropertyInfo.Name} }} from \"./{ objectItem.PropertyInfo.Name}\";");
+                        file.WriteLine($"import {{ {objectItem.PropertyInfo.Name} }} from \"./{objectItem.PropertyInfo.Name}\";");
                     }
 
                     file.WriteLine($"export class {item.Key} " + "{");
@@ -198,13 +203,13 @@ namespace HtmlConvertTool
 
                 file.WriteLine("<script lang='ts'>");
                 file.WriteLine("import { watch, reactive, defineComponent } from 'vue';");
-                file.WriteLine("import 'reflect-metadata';");
-                file.WriteLine("import 'es6-shim';");
+                //file.WriteLine("import 'reflect-metadata';");
+                //file.WriteLine("import 'es6-shim';");
                 file.WriteLine("import { classToPlain, deserialize, plainToClassFromExist } from 'class-transformer';");
                 file.WriteLine("import axios from 'axios';");
                 foreach (var item in componentInfo.DataClassNames)
                 {
-                    file.WriteLine($"import {{{ item }}} from '../dataclass/{item}';");
+                    file.WriteLine($"import {{{item}}} from '../dataclass/{item}';");
                 }
 
                 file.WriteLine("");
@@ -304,22 +309,23 @@ namespace HtmlConvertTool
         private static void CreateViewVue(HtmlNode htmlNode)
         {
             List<string> componentNameList = new List<string>();
-            List<string> detailViewNameList = new List<string>();
 
             CreateFolderIfNotExist(@"src\views\");
 
             //取得每個dy-view
             var viewNode = htmlNode.SelectSingleNode($"//*[@dy-view]");
+            viewNode.SelectSingleNode($"//*[@dy-detailview]").ParentNode.InnerHtml = viewNode.SelectSingleNode($"//*[@dy-detailview]").ParentNode.InnerHtml + "<router-view />";
 
-            var detailViewNodes = viewNode.SelectNodes($"//*[@dy-view=\"'{GetViewName(viewNode)}'\"]//@dy-detailview");
+            var detailViewNodes = htmlNode.SelectNodes($"//*[@dy-view=\"'{GetViewName(viewNode)}'\"]//@dy-detailview");
 
-            if (detailViewNodes.Any())
+            if (detailViewNodes != null)
             {
-                foreach (var detailViewNode in detailViewNodes)
+                while (detailViewNodes != null)
                 {
-                    string detailViewPath = Path.Combine(AppSettings.OutputFilePath, $@"src\views\{GetDetailViewName(detailViewNode)}.vue");
+                    string detailViewName = GetDetailViewName(detailViewNodes[0]);
+                    string detailViewPath = Path.Combine(AppSettings.OutputFilePath, $@"src\views\{detailViewName}.vue");
 
-                    var deatilViewComponentNodes = viewNode.SelectNodes($"//*[@dy-detailview=\"'{GetDetailViewName(detailViewNode)}'\"]//@dy-component");
+                    var deatilViewComponentNodes = htmlNode.SelectNodes($"//*[@dy-detailview=\"'{detailViewName}'\"]//@dy-component");
 
                     if (deatilViewComponentNodes != null)
                     {
@@ -333,14 +339,14 @@ namespace HtmlConvertTool
                     using (StreamWriter file = new StreamWriter(detailViewPath, false))
                     {
                         file.WriteLine("<template>");
-                        file.WriteLine(detailViewNode.InnerHtml);
+                        file.WriteLine(detailViewNodes[0].OuterHtml);
                         file.WriteLine("</template>");
                         file.WriteLine("<script lang='ts'>");
                         file.WriteLine("import { defineComponent } from 'vue';");
 
                         foreach (var item in componentNameList)
                         {
-                            file.WriteLine($"import {item} from './components/{item}.vue';");
+                            file.WriteLine($"import {item} from '@/components/{item}.vue';");
                         }
 
                         file.WriteLine("export default defineComponent({");
@@ -349,7 +355,7 @@ namespace HtmlConvertTool
 
                         foreach (var item in componentNameList)
                         {
-                            file.WriteLine($"\"{ item}\": {item},");
+                            file.WriteLine($"\"{item.ToLower()}\": {item},");
                         }
 
                         file.WriteLine(" },");
@@ -358,13 +364,15 @@ namespace HtmlConvertTool
                     }
 
                     //除去主view裡的DetailView內容
-                    HtmlNode newChild2 = HtmlNode.CreateNode($"<{GetDetailViewName(detailViewNode)} />");
-                    viewNode.ReplaceChild(newChild2, detailViewNode);
-
+                    //HtmlNode newChild2 = HtmlNode.CreateNode($"<router-view />"); 
+                    detailViewNodes[0].ParentNode.RemoveChild(detailViewNodes[0]);
+                    viewNode.InnerHtml = $"<router-link to=\"/{detailViewName}\">{detailViewName}</router-link> | " + viewNode.InnerHtml;
+                    //重做一次
+                    detailViewNodes = htmlNode.SelectNodes($"//*[@dy-view=\"'{GetViewName(viewNode)}'\"]//@dy-detailview");
                 }
             }
 
-            var componentNodes = viewNode.SelectNodes($"//*[@dy-component]");
+            var componentNodes = htmlNode.SelectNodes($"//*[@dy-component]");
 
             string path = Path.Combine(AppSettings.OutputFilePath, $@"src\views\{GetViewName(viewNode)}.vue");
 
@@ -376,36 +384,34 @@ namespace HtmlConvertTool
                     HtmlNode newChild = HtmlNode.CreateNode($"<{GetComponentName(node)} />");
                     node.ParentNode.ReplaceChild(newChild, node);
                 }
-
-                using (StreamWriter file = new StreamWriter(path, false))
-                {
-                    file.WriteLine("<template>");
-                    file.WriteLine(viewNode.InnerHtml);
-                    file.WriteLine("</template>");
-                    file.WriteLine("<script lang='ts'>");
-                    file.WriteLine("import { defineComponent } from 'vue';");
-
-                    foreach (var item in componentNameList)
-                    {
-                        file.WriteLine($"import {item} from './components/{item}.vue';");
-                    }
-
-                    file.WriteLine("export default defineComponent({");
-                    file.WriteLine("name: 'App',");
-                    file.WriteLine("components: {");
-
-                    foreach (var item in componentNameList)
-                    {
-                        file.WriteLine($"\"{ item}\": {item},");
-                    }
-
-                    file.WriteLine(" },");
-                    file.WriteLine("})");
-                    file.WriteLine("</script>");
-                }
             }
 
+            using (StreamWriter file = new StreamWriter(path, false))
+            {
+                file.WriteLine("<template>");
+                file.WriteLine(viewNode.InnerHtml);
+                file.WriteLine("</template>");
+                file.WriteLine("<script lang='ts'>");
+                file.WriteLine("import { defineComponent } from 'vue';");
 
+                foreach (var item in componentNameList)
+                {
+                    file.WriteLine($"import {item} from '@/components/{item}.vue';");
+                }
+
+                file.WriteLine("export default defineComponent({");
+                file.WriteLine("name: 'App',");
+                file.WriteLine("components: {");
+
+                foreach (var item in componentNameList)
+                {
+                    file.WriteLine($"\"{item.ToLower()}\": {item},");
+                }
+
+                file.WriteLine(" },");
+                file.WriteLine("})");
+                file.WriteLine("</script>");
+            }
         }
 
         /// <summary>
@@ -443,12 +449,15 @@ namespace HtmlConvertTool
                 file.WriteLine("import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';");
                 file.WriteLine($"import {GetViewName(viewNode)} from '../views/{GetViewName(viewNode)}.vue';");
 
-                foreach (var node in detailViewNodes)
+                if (detailViewNodes != null)
                 {
-                    file.WriteLine($"import {GetDetailViewName(node)} from '../views/{GetDetailViewName(node)}.vue';");
+                    foreach (var node in detailViewNodes)
+                    {
+                        file.WriteLine($"import {GetDetailViewName(node)} from '../views/{GetDetailViewName(node)}.vue';");
+                    }
                 }
 
-                file.WriteLine("import NotFound from '../views/NotFound.vue';");
+                //file.WriteLine("import NotFound from '../views/NotFound.vue';");
                 file.WriteLine("import axios from 'axios';");
                 file.WriteLine("");
                 file.WriteLine("const routes: Array<RouteRecordRaw> = [");
@@ -458,21 +467,24 @@ namespace HtmlConvertTool
                 file.WriteLine($"component: () => import('../views/{GetViewName(viewNode)}.vue'),");
 
                 file.WriteLine("children:[");
-                foreach (var node in detailViewNodes)
+                if (detailViewNodes != null)
                 {
-                    file.WriteLine("{name: '"+$"{GetDetailViewName(node)}"+ "',path: '" + $"{GetDetailViewName(node)}" + "',component: " + $"{GetDetailViewName(node)}" + ",},");
+                    foreach (var node in detailViewNodes)
+                    {
+                        file.WriteLine("{name: '" + $"{GetDetailViewName(node)}" + "',path: '" + $"{GetDetailViewName(node)}" + "',component: " + $"{GetDetailViewName(node)}" + ",},");
+                    }
                 }
                 file.WriteLine("],");
 
                 file.WriteLine("},");
-                file.WriteLine("{");
-                file.WriteLine("path: '/:pathMatch(.*)*',");
-                file.WriteLine("name: 'NotFound',");
-                file.WriteLine("component: NotFound,");
-                file.WriteLine("},");
+                //file.WriteLine("{");
+                //file.WriteLine("path: '/:pathMatch(.*)*',");
+                //file.WriteLine("name: 'NotFound',");
+                //file.WriteLine("component: NotFound,");
+                //file.WriteLine("},");
                 file.WriteLine("]");
                 file.WriteLine("const router = createRouter({");
-                file.WriteLine("history: createWebHistory(process.env.BASE_URL),");
+                file.WriteLine("history: createWebHistory(),");
                 file.WriteLine("routes");
                 file.WriteLine("})");
                 file.WriteLine("export default router");

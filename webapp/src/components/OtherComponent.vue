@@ -49,7 +49,7 @@ var postData = JSON.parse(jsonstring);
  .then((response) => automapp(response.data));
 }
 
-Aggr_Post('OtherComponent','bgKey', 'url:CompanyID:CompanyID',  'url:ID:ID')
+Aggr_Post('OtherComponent', 'bgKey', 'url:CompanyID:CompanyID',  'url:ID:ID')
 
 Aggr_Post('selectinitial','Title')
 

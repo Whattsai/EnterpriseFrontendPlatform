@@ -181,7 +181,7 @@ var postData = JSON.parse(jsonstring);
  .then((response) => automapp(response.data));
 }
 
-Aggr_Post('YearEndBonusesComponent','hr',  'EFP_GetBonusAndSalary',  'url:CompanyCode:CompanyCode',  'url:EmpID:EmpID',  'url:Year:Year',  'url:Lang:Lang')
+Aggr_Post('YearEndBonusesComponent', 'hr',  'EFP_GetBonusAndSalary',  'url:CompanyCode:CompanyCode',  'url:EmpID:EmpID',  'url:Year:Year',  'url:Lang:Lang')
 
 Aggr_Post('hr', 'EFP_GetBonusCompany', 'url:CompanyCode:CompanyCode',  'url:EmpID:EmpID',  'url:Year:Year',  'url:Lang:Lang')
 
